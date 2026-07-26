@@ -1,0 +1,19 @@
+# Cron job — weekly scrape (Sunday 03:00 UTC)
+# Deploy this folder as a Railway service with start command:
+#   npm run build && npm start
+#
+# For on-demand HTTP trigger, use a second service or switch start to:
+#   npm run build && npm run serve
+# and hit POST /run with Authorization: Bearer $CRON_SECRET
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm install && npx playwright install chromium && npm run build"
+
+[deploy]
+startCommand = "npm start"
+restartPolicyType = "NEVER"
+
+# Railway Cron: configure in dashboard → Settings → Cron
+# Schedule example: 0 3 * * 0
+# Command: npm start

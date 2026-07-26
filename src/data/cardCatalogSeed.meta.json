@@ -1,0 +1,22 @@
+{
+  "totalRadarCards": 22,
+  "note": "Benefit Radar products.ts currently contains 22 credit/debit cards (not 30). All were seeded.",
+  "categoriesMapped": {
+    "lounge": "lounge",
+    "dining": "dining",
+    "travel": "travel",
+    "fuel": "fuel",
+    "golf": "entertainment",
+    "ott": "entertainment",
+    "cashback": "shopping",
+    "discount": "shopping",
+    "insurance": "other",
+    "health": "other",
+    "other": "other"
+  },
+  "valueEstimateSet": 8,
+  "valueEstimateNull": 62,
+  "totalBenefits": 70,
+  "milestonesNote": "Milestone-style Radar benefits seeded as card_benefits (no structured target_spend).",
+  "discontinuedNote": "HDFC Diners Black includes Radar note that card is discontinued; kept as catalog entry for existing holders."
+}

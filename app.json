@@ -1,0 +1,94 @@
+{
+  "expo": {
+    "name": "KeyKards",
+    "slug": "KeyKards",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "keykards",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0A0A14",
+    "ios": {
+      "bundleIdentifier": "com.keykards.app",
+      "icon": "./assets/expo.icon",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "KeyKards uses Face ID to unlock the app and protect your card details."
+      },
+      "associatedDomains": ["applinks:keykards.redevolve.in"]
+    },
+    "android": {
+      "package": "com.keykards.app",
+      "softwareKeyboardLayoutMode": "resize",
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0A14",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.NFC"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "keykards.redevolve.in",
+              "pathPrefix": "/shared"
+            },
+            {
+              "scheme": "keykards",
+              "host": "shared"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-dev-client",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0A0A14",
+          "image": "./assets/images/splash-wordmark.png",
+          "imageWidth": 220,
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "KeyKards uses Face ID to unlock the app and protect your card details."
+        }
+      ],
+      "react-native-quick-crypto",
+      "./plugins/withAndroidFlagSecure",
+      "./plugins/withAndroidNfc",
+      "expo-build-properties"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "96fba674-f84d-43b3-b6bc-e085d7799095"
+      }
+    },
+    "owner": "ak45h6017"
+  }
+}

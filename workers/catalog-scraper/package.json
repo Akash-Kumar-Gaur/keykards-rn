@@ -1,0 +1,34 @@
+{
+  "name": "keykards-catalog-scraper",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "start:discover": "node dist/discover-index.js",
+    "scrape": "tsx src/cli.ts",
+    "scrape:dry": "tsx src/cli.ts --dry-run --limit 3",
+    "discover": "tsx src/cli.ts discover",
+    "discover:dry": "tsx src/cli.ts discover --dry-run --limit 3",
+    "seed-known": "tsx src/cli.ts seed-known",
+    "smoke:fetch": "tsx src/smoke-fetch.ts --limit 10",
+    "serve": "tsx src/server.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.57.0",
+    "@supabase/supabase-js": "^2.110.8",
+    "dotenv": "^17.4.2",
+    "openai": "^6.49.0",
+    "playwright": "^1.54.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,642 @@
+[
+  {
+    "bank_name": "HDFC Bank",
+    "card_name": "HDFC Regalia Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 2500,
+    "card_color_theme": "hdfc-maroon",
+    "default_benefits": [
+      {
+        "title": "Domestic Airport Lounge Access",
+        "category": "lounge",
+        "description": "2 complimentary domestic airport lounge visits per quarter (8/year). IMPORTANT: Requires minimum spend of ₹1,00,000 in the preceding calendar quarter to qualify. Zero visits credited if spend threshold not met. Minimum spend of ₹1,00,000 in preceding calendar quarter required. Check eligibility on HDFC Netbanking before visiting lounge. (2 visits/quarter)",
+        "value_estimate": null
+      },
+      {
+        "title": "International Lounge via Priority Pass",
+        "category": "lounge",
+        "description": "6 complimentary international lounge visits per year via Priority Pass (combined for primary + add-on cardholder). Priority Pass membership must be activated separately after completing 4 retail transactions. Complete minimum 4 retail transactions before applying for Priority Pass. 6 visits shared between primary and add-on cardholder. Usage inside India is chargeable. (6 visits/year)",
+        "value_estimate": null
+      },
+      {
+        "title": "Air Accident Insurance Cover",
+        "category": "other",
+        "description": "Personal accident death cover of ₹1 crore in case of air accidental death. Card must have been used at least once in preceding 60 days for cover to be active. Card must be active with at least one transaction in preceding 60 days. Claim must be raised within 130 days of incident. (₹1 crore cover)",
+        "value_estimate": null
+      },
+      {
+        "title": "4 Reward Points per ₹150 Spent",
+        "category": "shopping",
+        "description": "Earn 4 reward points on every ₹150 of retail spend. Bonus 10,000 points on ₹5L annual spend, additional 5,000 points on ₹8L annual spend. 1 point ≈ ₹0.50 when redeemed on SmartBuy for flights/hotels. Excludes fuel, wallet loads, and EMI transactions. Points expire in 2 years. (4 pts/₹150)",
+        "value_estimate": null
+      },
+      {
+        "title": "Fuel Surcharge Waiver",
+        "category": "fuel",
+        "description": "1% fuel surcharge waiver at all fuel stations across India on transactions between ₹400 and ₹5,000. Valid on transactions between ₹400 and ₹5,000 only. (1% waiver)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "hdfc-maroon"
+  },
+  {
+    "bank_name": "HDFC Bank",
+    "card_name": "HDFC Regalia Gold Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 2500,
+    "card_color_theme": "hdfc-maroon",
+    "default_benefits": [
+      {
+        "title": "Domestic Airport Lounge Access",
+        "category": "lounge",
+        "description": "3 complimentary domestic airport lounge visits per quarter (12/year). Requires minimum spend of ₹60,000 in the preceding calendar quarter. Zero visits if spend threshold not met. Minimum ₹60,000 spend in preceding calendar quarter required to unlock quarterly lounge benefit. (3 visits/quarter)",
+        "value_estimate": null
+      },
+      {
+        "title": "Complimentary Swiggy One Membership",
+        "category": "shopping",
+        "description": "Complimentary Swiggy One membership as welcome benefit. Includes free deliveries and exclusive restaurant discounts. Welcome benefit — activate within stated validity period after card issuance. (~₹1,299/yr value)",
+        "value_estimate": 1299
+      },
+      {
+        "title": "Complimentary MMT Black Gold Membership",
+        "category": "travel",
+        "description": "Complimentary MakeMyTrip Black Gold membership as welcome benefit. Includes exclusive hotel and flight discounts. Welcome benefit — activate within stated validity period after card issuance. (~₹2,999/yr value)",
+        "value_estimate": 2999
+      },
+      {
+        "title": "Air Accident Insurance Cover",
+        "category": "other",
+        "description": "Personal accident death cover of ₹1 crore in case of air accidental death. Card must be active with recent transaction before incident. (₹1 crore cover)",
+        "value_estimate": null
+      },
+      {
+        "title": "4 Reward Points per ₹150 Spent",
+        "category": "shopping",
+        "description": "Earn 4 reward points on every ₹150 retail spend. 5X points on select brands via SmartBuy. Quarterly milestone: ₹1,500 voucher on ₹1.5L quarterly spend. Excludes fuel, wallet loads, EMI. 5X on select SmartBuy merchants only. (4 pts/₹150)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "hdfc-maroon"
+  },
+  {
+    "bank_name": "HDFC Bank",
+    "card_name": "HDFC Diners Black Credit Card",
+    "network": "Diners",
+    "default_annual_fee": 10000,
+    "card_color_theme": "hdfc-maroon",
+    "default_benefits": [
+      {
+        "title": "Unlimited Domestic + International Lounge Access",
+        "category": "lounge",
+        "description": "Unlimited complimentary access to 1,000+ domestic and international airport lounges worldwide for primary cardholder. No quarterly or annual cap. Note: This card has been discontinued by HDFC (replaced by Diners Black Metal). Existing cardholders continue to receive benefits. (Unlimited)",
+        "value_estimate": null
+      },
+      {
+        "title": "6 Complimentary Golf Games per Quarter",
+        "category": "entertainment",
+        "description": "6 complimentary golf games per quarter at leading golf courses across India and internationally. Subject to golf course availability. Advance booking required. (6 games/quarter)",
+        "value_estimate": null
+      },
+      {
+        "title": "Air Accident Insurance Cover",
+        "category": "other",
+        "description": "Air accidental death cover of ₹2 crore. Emergency overseas hospitalization cover of ₹50 lakh. Baggage delay cover up to ₹50,000. Credit liability cover ₹9 lakh. Card must be active with recent transaction. Multiple covers bundled — verify each with HDFC ERGO. (₹2 crore air accident cover)",
+        "value_estimate": null
+      },
+      {
+        "title": "5 Reward Points per ₹150 + 10X on SmartBuy",
+        "category": "shopping",
+        "description": "Earn 5 reward points per ₹150 on all retail spends (3.3% reward rate). 10X points on SmartBuy portal. Complimentary annual memberships: Amazon Prime, Club Marriott, Swiggy One, Times Prime (on ₹8L annual spend). Monthly vouchers worth ₹500 from leading brands on ₹80,000 monthly spend. Insurance spends capped at 5,000 pts/month. Grocery capped at 2,000 pts/month. Annual fee waived on ₹8L annual spend. (5 pts/₹150 (3.3% rate))",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "hdfc-maroon"
+  },
+  {
+    "bank_name": "HDFC Bank",
+    "card_name": "HDFC Millennia Credit Card",
+    "network": "Mastercard",
+    "default_annual_fee": 1000,
+    "card_color_theme": "hdfc-maroon",
+    "default_benefits": [
+      {
+        "title": "5% Cashback on Top Shopping Apps",
+        "category": "shopping",
+        "description": "5% cashback on Amazon, Flipkart, Myntra, Swiggy, Zomato, BookMyShow, Cult.fit, and other partner apps. Capped at ₹1,000 cashback per statement cycle across all partners combined. Capped at ₹1,000 CashPoints per statement cycle. Excludes EMI transactions. (5% back (cap ₹1,000/mo))",
+        "value_estimate": 1000
+      },
+      {
+        "title": "1% Cashback on All Other Spends",
+        "category": "shopping",
+        "description": "1% cashback on all spends not covered by the 5% partner category. Excludes fuel, wallet loads, and EMI transactions. (1% back)",
+        "value_estimate": null
+      },
+      {
+        "title": "Domestic Airport Lounge Access",
+        "category": "lounge",
+        "description": "1 complimentary domestic airport lounge visit per quarter. Check minimum spend requirement on HDFC portal — may require quarterly spend threshold. (1 visit/quarter)",
+        "value_estimate": null
+      },
+      {
+        "title": "Fuel Surcharge Waiver",
+        "category": "fuel",
+        "description": "1% fuel surcharge waiver at all fuel stations on transactions between ₹400 and ₹5,000. Valid on transactions between ₹400 and ₹5,000 only. (1% waiver)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "hdfc-maroon"
+  },
+  {
+    "bank_name": "SBI Card",
+    "card_name": "SBI Card ELITE",
+    "network": "Mastercard",
+    "default_annual_fee": 4999,
+    "card_color_theme": "sbi-indigo",
+    "default_benefits": [
+      {
+        "title": "Domestic Airport Lounge Access",
+        "category": "lounge",
+        "description": "2 complimentary domestic airport lounge visits per quarter (8 per year) via Visa/Mastercard lounge program. Not unlimited — quota is strictly 2 per quarter. 2 visits per quarter only — resets each calendar quarter. NOT unlimited. (2 visits/quarter)",
+        "value_estimate": null
+      },
+      {
+        "title": "International Lounge via Priority Pass",
+        "category": "lounge",
+        "description": "6 complimentary international lounge visits per year via Priority Pass. Priority Pass membership must be activated through SBI Card portal before first use. Must activate Priority Pass on SBI Card portal before use. Only 6 complimentary visits per year — additional visits charged. (6 visits/year)",
+        "value_estimate": null
+      },
+      {
+        "title": "2 Free Movie Tickets per Month",
+        "category": "shopping",
+        "description": "Buy 1 Get 1 free movie tickets on BookMyShow, up to 2 free tickets per month. Maximum discount ₹500 per ticket. Maximum ₹500 discount per ticket. Limited to 2 free tickets per calendar month. Subject to BookMyShow availability. (2 tickets/month)",
+        "value_estimate": null
+      },
+      {
+        "title": "5X Reward Points on Dining, Grocery & Departmental",
+        "category": "shopping",
+        "description": "Earn 5X reward points on dining, grocery, and departmental store spends. 2X on all other retail spends. 1 reward point = ₹0.25. 1 reward point = ₹0.25. Points expire after 2 years. (5X pts (dining/grocery))",
+        "value_estimate": null
+      },
+      {
+        "title": "Air Accident Insurance Cover",
+        "category": "other",
+        "description": "Personal accident death cover of ₹1 crore in case of air accidental death. Card must be active before incident. Verify exact activation conditions in card T&Cs. (₹1 crore cover)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "sbi-indigo"
+  },
+  {
+    "bank_name": "SBI Card",
+    "card_name": "SBI SimplyCLICK Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 499,
+    "card_color_theme": "sbi-indigo",
+    "default_benefits": [
+      {
+        "title": "10X Reward Points on Partner Merchants",
+        "category": "shopping",
+        "description": "10X reward points on Amazon, BookMyShow, Cleartrip, Lenskart, Netmeds, and other online partners. 5X on all other online spends. 1X on offline. 1 reward point = ₹0.25. Annual e-voucher worth ₹2,000 on ₹1L annual spend. (10X pts on partners)",
+        "value_estimate": null
+      },
+      {
+        "title": "Annual e-Voucher on Milestone Spend",
+        "category": "shopping",
+        "description": "Earn e-voucher worth ₹2,000 on achieving ₹1,00,000 annual spend. Additional ₹2,000 voucher on ₹2,00,000 annual spend. Based on annual spend in card anniversary year, not calendar year. (₹2,000–4,000 voucher)",
+        "value_estimate": 2000
+      }
+    ],
+    "default_color_theme": "sbi-indigo"
+  },
+  {
+    "bank_name": "SBI Card",
+    "card_name": "BPCL SBI Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 499,
+    "card_color_theme": "sbi-indigo",
+    "default_benefits": [
+      {
+        "title": "4.25% Value Back on BPCL Fuel",
+        "category": "fuel",
+        "description": "13X reward points on BPCL fuel purchases (4.25% effective value back including 1% surcharge waiver). Also 5X reward points on grocery, dining, movies, and departmental stores. Maximum 1,300 reward points per month on fuel spends. 1 reward point = ₹0.25. (4.25% on BPCL fuel)",
+        "value_estimate": null
+      },
+      {
+        "title": "Fuel Surcharge Waiver at BPCL",
+        "category": "fuel",
+        "description": "1% fuel surcharge waiver on fuel transactions at BPCL pumps. Effectively increases total value back to 4.25%. Only at BPCL pumps. Other fuel stations not covered. (1% surcharge waiver)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "sbi-indigo"
+  },
+  {
+    "bank_name": "Axis Bank",
+    "card_name": "Axis Magnus Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 12500,
+    "card_color_theme": "axis-burgundy",
+    "default_benefits": [
+      {
+        "title": "Unlimited Domestic + International Lounge Access",
+        "category": "lounge",
+        "description": "Unlimited domestic airport lounge access for primary and add-on cardholders. IMPORTANT: Requires minimum spend of ₹50,000 in the previous 3 calendar months to qualify. This spend condition was introduced from 1 May 2024. Waived for first 3 months for new cardholders. Minimum ₹50,000 spend in previous 3 calendar months required. Effective 1 May 2024. Dreamfolks partnership ended July 2025 — now via Priority Pass for international, separate network for domestic. (Unlimited)",
+        "value_estimate": null
+      },
+      {
+        "title": "12 EDGE Reward Points per ₹200 (up to ₹1.5L/month)",
+        "category": "shopping",
+        "description": "Earn 12 EDGE reward points per ₹200 on monthly spends up to ₹1.5 lakh. Earn 35 EDGE reward points per ₹200 on monthly spends exceeding ₹1.5 lakh. 5X points on Travel EDGE portal. 2 partner miles per 5 EDGE points across 20 travel partners. NO points on: Utility, Telecom, Rent (above ₹50K/month), Government, Wallet, Insurance, Gold/Jewellery, Fuel. Reward rate drops back to 12 pts/₹200 after exceeding credit limit + ₹1.5L in a month. No points on several excluded categories. (12 pts/₹200 (up to ₹1.5L/mo))",
+        "value_estimate": null
+      },
+      {
+        "title": "Comprehensive Travel Insurance",
+        "category": "other",
+        "description": "Travel insurance cover including trip cancellation, lost baggage, and emergency medical cover up to ₹50 lakh for international travel. Verify exact cover terms in the card T&Cs. Travel must be booked using Axis Magnus card. (₹50 lakh travel cover)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "axis-burgundy"
+  },
+  {
+    "bank_name": "Axis Bank",
+    "card_name": "Axis Ace Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 499,
+    "card_color_theme": "axis-burgundy",
+    "default_benefits": [
+      {
+        "title": "5% Cashback on Swiggy, Zomato & Ola",
+        "category": "shopping",
+        "description": "5% cashback on Swiggy, Zomato, and Ola transactions. No monthly cap on this category. No cap on Swiggy/Zomato/Ola cashback. Annual fee waived on ₹2L spend. (5% back)",
+        "value_estimate": null
+      },
+      {
+        "title": "4% Cashback on Bill Payments via Google Pay",
+        "category": "shopping",
+        "description": "4% cashback on utility bill payments, mobile recharges, and DTH payments made via Google Pay using Axis Ace card. Must pay via Google Pay specifically. Direct bank/biller payment not eligible. (4% back)",
+        "value_estimate": null
+      },
+      {
+        "title": "2% Cashback on All Other Spends",
+        "category": "shopping",
+        "description": "2% cashback on all other spends not in the 5% or 4% category. No upper cap. Excludes fuel, wallet loads, and EMI transactions. (2% back (all others))",
+        "value_estimate": null
+      },
+      {
+        "title": "Fuel Surcharge Waiver",
+        "category": "fuel",
+        "description": "1% fuel surcharge waiver at all fuel stations across India. Valid on transactions between ₹400 and ₹5,000. (1% waiver)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "axis-burgundy"
+  },
+  {
+    "bank_name": "Axis Bank",
+    "card_name": "Axis Flipkart Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 500,
+    "card_color_theme": "axis-burgundy",
+    "default_benefits": [
+      {
+        "title": "5% Cashback on Flipkart & Cleartrip, 7.5% on Myntra",
+        "category": "shopping",
+        "description": "5% cashback on Flipkart and Cleartrip purchases. 7.5% cashback on Myntra. 4% cashback on preferred partners: Swiggy, Uber, PVR INOX, cult.fit. 1% on all other spends. No upper cap on cashback amount. No lounge access as of June 2025. Cashback auto-adjusted in next statement. Excludes fuel, EMI, jewellery, insurance, government payments. (5–7.5% back)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "axis-burgundy"
+  },
+  {
+    "bank_name": "ICICI Bank",
+    "card_name": "Amazon Pay ICICI Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 0,
+    "card_color_theme": "icici-amber",
+    "default_benefits": [
+      {
+        "title": "5% Cashback on Amazon (Prime Members)",
+        "category": "shopping",
+        "description": "5% unlimited cashback on all Amazon.in purchases for Amazon Prime members. No monthly or annual cap. Requires active Amazon Prime membership. Non-Prime members get 3% cashback instead. (5% back (Prime))",
+        "value_estimate": null
+      },
+      {
+        "title": "3% Cashback on Amazon (Non-Prime Members)",
+        "category": "shopping",
+        "description": "3% cashback on Amazon.in purchases for non-Prime members. Upgrade to Prime for 5% rate. Both rates have no upper cap. (3% back (non-Prime))",
+        "value_estimate": null
+      },
+      {
+        "title": "2% Cashback on 200+ Partner Merchants",
+        "category": "shopping",
+        "description": "2% cashback at 200+ Amazon Pay partner merchants including Cleartrip, BigBasket, 1mg, and more. Partner list available on Amazon Pay portal. Check before assuming eligibility. (2% back (partners))",
+        "value_estimate": null
+      },
+      {
+        "title": "1% Cashback on All Other Spends",
+        "category": "shopping",
+        "description": "1% cashback on all other spends not in the Amazon or partner categories. Excludes fuel and EMI transactions. (1% back)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "icici-amber"
+  },
+  {
+    "bank_name": "ICICI Bank",
+    "card_name": "ICICI Coral Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 500,
+    "card_color_theme": "icici-amber",
+    "default_benefits": [
+      {
+        "title": "2 Free Movie Tickets per Month",
+        "category": "shopping",
+        "description": "Buy 1 Get 1 free on movie tickets via BookMyShow, up to 2 free tickets per month. Maximum discount ₹250 per ticket. Maximum ₹250 discount per ticket. 2 free tickets per calendar month. (2 tickets/month)",
+        "value_estimate": null
+      },
+      {
+        "title": "Domestic Airport Lounge Access",
+        "category": "lounge",
+        "description": "1 complimentary domestic airport lounge visit per quarter via Visa/Mastercard lounge program. Verify current lounge access terms on ICICI portal — conditions may have changed. (1 visit/quarter)",
+        "value_estimate": null
+      },
+      {
+        "title": "Fuel Surcharge Waiver",
+        "category": "fuel",
+        "description": "1% fuel surcharge waiver at all fuel stations. Check minimum/maximum transaction limits on ICICI portal. (1% waiver)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "icici-amber"
+  },
+  {
+    "bank_name": "Kotak Mahindra Bank",
+    "card_name": "Kotak Royale Signature Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 999,
+    "card_color_theme": "kotak-crimson",
+    "default_benefits": [
+      {
+        "title": "Domestic Airport Lounge Access",
+        "category": "lounge",
+        "description": "2 complimentary domestic airport lounge visits per quarter (8 per year). Verify current spend thresholds on Kotak portal — may require minimum quarterly spend. (2 visits/quarter)",
+        "value_estimate": null
+      },
+      {
+        "title": "4X Reward Points on Travel, Entertainment & Dining",
+        "category": "shopping",
+        "description": "Earn 4X reward points on travel, entertainment, and dining spends. 2X on grocery. 1X on all other spends. Check point value and expiry on Kotak portal. (4X pts (travel/dining))",
+        "value_estimate": null
+      },
+      {
+        "title": "Air Accident Insurance Cover",
+        "category": "other",
+        "description": "Personal accident death cover of ₹50 lakh in case of air accidental death. Card must be active before incident. Verify exact terms in card T&Cs. (₹50 lakh cover)",
+        "value_estimate": null
+      },
+      {
+        "title": "Fuel Surcharge Waiver",
+        "category": "fuel",
+        "description": "1% fuel surcharge waiver at all fuel stations across India. Check transaction limits on Kotak portal. (1% waiver)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "kotak-crimson"
+  },
+  {
+    "bank_name": "SBI Card",
+    "card_name": "SBI Cashback Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 999,
+    "card_color_theme": "sbi-indigo",
+    "default_benefits": [
+      {
+        "title": "5% Cashback on All Online Spends",
+        "category": "shopping",
+        "description": "5% cashback on all online transactions across any website or app — not restricted to specific merchants. Capped at ₹5,000 cashback per statement cycle. No lounge access (was removed). Capped at ₹5,000 per statement cycle. Excludes insurance, fuel, EMI, government payments, jewellery. Lounge access was revoked — card no longer has this benefit. (5% back (cap ₹5,000/cycle))",
+        "value_estimate": 5000
+      },
+      {
+        "title": "1% Cashback on All Offline Spends",
+        "category": "shopping",
+        "description": "1% cashback on all offline/in-store purchases. Also capped at ₹5,000 combined with online cashback per statement cycle. Annual fee waived on ₹2L annual spend. (1% back (offline))",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "sbi-indigo"
+  },
+  {
+    "bank_name": "HDFC Bank",
+    "card_name": "HDFC Millennia Debit Card",
+    "network": "Mastercard",
+    "default_annual_fee": 0,
+    "card_color_theme": "hdfc-maroon",
+    "default_benefits": [
+      {
+        "title": "5% Cashback on Amazon, Flipkart & Swiggy",
+        "category": "shopping",
+        "description": "5% cashback on Amazon, Flipkart, Myntra, Swiggy, Zomato, BookMyShow, and other partner apps. Capped at ₹400 per month combined across all partner categories. Capped at ₹400/month total across all 5% partner categories. (5% back (cap ₹400/mo))",
+        "value_estimate": 400
+      },
+      {
+        "title": "Accidental Death Insurance Cover",
+        "category": "other",
+        "description": "Personal accidental death cover of up to ₹10 lakh for air, road, and rail accidents. Card must have been used at least once in preceding 30 days. Card must be active (used at least once in 30 days before incident). Verify exact activation condition in card T&Cs. (₹10 lakh accident cover)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "hdfc-maroon"
+  },
+  {
+    "bank_name": "SBI",
+    "card_name": "SBI Gold Debit Card",
+    "network": "Mastercard",
+    "default_annual_fee": 0,
+    "card_color_theme": "sbi-indigo",
+    "default_benefits": [
+      {
+        "title": "Personal Accident Insurance Cover",
+        "category": "other",
+        "description": "Personal accidental death cover of ₹2 lakh. Air accidental death cover of ₹4 lakh. Card must have been used for a purchase transaction in preceding 45–90 days for cover to be active. Card must have been used for a purchase (not ATM withdrawal) in 45–90 days before incident. Exact window varies — verify in card T&Cs. (₹2L (general) / ₹4L (air))",
+        "value_estimate": null
+      },
+      {
+        "title": "Purchase Protection Cover",
+        "category": "other",
+        "description": "Covers items purchased with the card against fire and burglary for a limited period after purchase. Cover up to ₹5,000 per claim. Limited coverage window after purchase. Check exact duration in card T&Cs. (Up to ₹5,000)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "sbi-indigo"
+  },
+  {
+    "bank_name": "IDFC FIRST Bank",
+    "card_name": "IDFC FIRST Wealth Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 0,
+    "card_color_theme": "idfc-copper",
+    "default_benefits": [
+      {
+        "title": "Domestic + International Lounge Access",
+        "category": "lounge",
+        "description": "1 complimentary domestic and international airport lounge visit per quarter. SPEND-GATED: requires ₹20,000 spend in current month to access lounge the following month. Must spend ₹20,000 in current calendar month to unlock lounge access for the next month. Spend threshold resets every month. (1 visit/quarter (spend-gated))",
+        "value_estimate": null
+      },
+      {
+        "title": "1 Complimentary Golf Game per Month",
+        "category": "entertainment",
+        "description": "1 complimentary golf game or lesson per month at partner golf clubs. Requires ₹20,000 monthly spend to qualify. Requires ₹20,000 monthly spend to unlock. Subject to course availability. (1 game/month (spend-gated))",
+        "value_estimate": null
+      },
+      {
+        "title": "2 Free Movie Tickets per Month",
+        "category": "shopping",
+        "description": "Buy 1 Get 1 free movie tickets via District app (by Zomato), up to 2 free tickets per month. Maximum ₹250 discount per ticket. Via District app (Zomato) only. Maximum ₹250 discount per ticket. 2 free tickets per calendar month. (2 tickets/month)",
+        "value_estimate": null
+      },
+      {
+        "title": "Air Accident + Personal Accident Cover",
+        "category": "other",
+        "description": "Air accidental death cover of ₹1 crore. Personal accident cover of ₹10 lakh. Lost card liability cover of ₹50,000. Card must be active. Zero annual fee card — one of the best value insurance covers in its category. (₹1 crore air accident cover)",
+        "value_estimate": null
+      },
+      {
+        "title": "10X Points on Dining, Travel & International Spends",
+        "category": "shopping",
+        "description": "Earn 10X reward points per ₹200 on dining, food delivery, travel, and international transactions. 3X on all other eligible spends above ₹2,000. 1X on insurance, utilities, railway, FASTag. Points never expire. 1 point = ₹0.25. No reward points on fuel, EMI, cash withdrawals. Points never expire — rare benefit. (10X pts (dining/travel))",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "idfc-copper"
+  },
+  {
+    "bank_name": "Yes Bank",
+    "card_name": "YES First Preferred Credit Card",
+    "network": "Mastercard",
+    "default_annual_fee": 999,
+    "card_color_theme": "generic-slate",
+    "default_benefits": [
+      {
+        "title": "Domestic Airport Lounge Access",
+        "category": "lounge",
+        "description": "2 complimentary domestic airport lounge visits per quarter (8 per year) via Mastercard lounge program. Verify current spend threshold requirements on Yes Bank portal. (2 visits/quarter)",
+        "value_estimate": null
+      },
+      {
+        "title": "24 Reward Points per ₹200 on Travel & Dining",
+        "category": "shopping",
+        "description": "Earn 24 reward points per ₹200 on travel and dining spends. 12 reward points per ₹200 on all other spends. Check point value and expiry on Yes Bank portal. Annual fee waived on minimum annual spend — verify threshold. (24 pts/₹200 (travel/dining))",
+        "value_estimate": null
+      },
+      {
+        "title": "Fuel Surcharge Waiver",
+        "category": "fuel",
+        "description": "1% fuel surcharge waiver at all fuel stations across India. Verify transaction limits on Yes Bank portal. (1% waiver)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "generic-slate"
+  },
+  {
+    "bank_name": "IndusInd Bank",
+    "card_name": "IndusInd Legend Credit Card",
+    "network": "Visa",
+    "default_annual_fee": 9999,
+    "card_color_theme": "axis-burgundy",
+    "default_benefits": [
+      {
+        "title": "Unlimited Domestic Airport Lounge Access",
+        "category": "lounge",
+        "description": "Unlimited complimentary domestic airport lounge access. 2 complimentary international lounge visits per quarter via IndusInd Celesta program. Verify current lounge program terms on IndusInd portal — lounge partnerships change periodically. (Unlimited domestic)",
+        "value_estimate": null
+      },
+      {
+        "title": "Complimentary Golf Access",
+        "category": "entertainment",
+        "description": "Complimentary golf games at premium golf courses across India. Verify exact quota and partner courses on IndusInd portal. (~₹3,000/game value)",
+        "value_estimate": 3000
+      }
+    ],
+    "default_color_theme": "axis-burgundy"
+  },
+  {
+    "bank_name": "RBL Bank",
+    "card_name": "RBL Shoprite Credit Card",
+    "network": "Mastercard",
+    "default_annual_fee": 500,
+    "card_color_theme": "generic-emerald",
+    "default_benefits": [
+      {
+        "title": "20X Reward Points on Grocery (Saturdays)",
+        "category": "shopping",
+        "description": "Earn 20 reward points per ₹100 on grocery purchases made on Saturdays. 10 reward points per ₹100 on all other Saturday spends. 2 reward points per ₹100 on weekday spends. 20X rate only on Saturdays for grocery. All other days earn 2X. Check point value on RBL portal. (20X pts (grocery/Saturday))",
+        "value_estimate": null
+      },
+      {
+        "title": "Domestic Airport Lounge Access",
+        "category": "lounge",
+        "description": "2 complimentary domestic airport lounge visits per quarter. Verify spend threshold (if any) on RBL portal before visiting lounge. (2 visits/quarter)",
+        "value_estimate": null
+      },
+      {
+        "title": "Fuel Surcharge Waiver",
+        "category": "fuel",
+        "description": "1% fuel surcharge waiver at all fuel stations. Check transaction limits on RBL portal. (1% waiver)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "generic-emerald"
+  },
+  {
+    "bank_name": "Standard Chartered",
+    "card_name": "Standard Chartered Manhattan Credit Card",
+    "network": "Mastercard",
+    "default_annual_fee": 999,
+    "card_color_theme": "generic-slate",
+    "default_benefits": [
+      {
+        "title": "5% Cashback on Grocery Stores",
+        "category": "shopping",
+        "description": "5% cashback at supermarkets and grocery stores. Capped at ₹500 per month. Capped at ₹500 cashback per month on grocery. Annual fee waived on ₹1.2L annual spend. (5% back (cap ₹500/mo))",
+        "value_estimate": 500
+      },
+      {
+        "title": "3X Reward Points on Dining & Travel",
+        "category": "shopping",
+        "description": "3X reward points on dining and travel spends. 1X on all other purchases. Check point value and expiry on Standard Chartered portal. (3X pts (dining/travel))",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "generic-slate"
+  },
+  {
+    "bank_name": "American Express",
+    "card_name": "American Express Gold Charge Card",
+    "network": "Amex",
+    "default_annual_fee": 4500,
+    "card_color_theme": "amex-gunmetal",
+    "default_benefits": [
+      {
+        "title": "Domestic Airport Lounge Access",
+        "category": "lounge",
+        "description": "4 complimentary domestic lounge visits per year via the Amex India lounge program. Maximum 1 visit per quarter. Maximum 1 visit per quarter. Check eligible lounges on Amex India lounge locator. (4 visits/year)",
+        "value_estimate": null
+      },
+      {
+        "title": "1 Membership Rewards Point per ₹50 Spent",
+        "category": "shopping",
+        "description": "Earn 1 Membership Rewards point per ₹50 spent. Bonus 1,000 MR points on 6 transactions of ₹1,000+ per month. Points redeemable for Amazon vouchers (1 point = ₹0.40), Flipkart, travel, or transfer to airline programs. Points never expire. Excludes fuel, insurance, utilities. Points never expire — strong advantage over other cards. (1 MR pt/₹50)",
+        "value_estimate": null
+      },
+      {
+        "title": "4,000 Bonus MR Points on ₹4L Spend per 6 Months",
+        "category": "shopping",
+        "description": "Earn 4,000 bonus Membership Rewards points on spending ₹4 lakh in each 6-month period. Two 6-month windows per anniversary year. Milestone tracked on card anniversary basis. (4,000 bonus MR pts)",
+        "value_estimate": null
+      }
+    ],
+    "default_color_theme": "amex-gunmetal"
+  }
+]
