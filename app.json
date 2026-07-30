@@ -9,7 +9,7 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0A0A14",
     "ios": {
-      "bundleIdentifier": "com.inwallet.app",
+      "bundleIdentifier": "in.redevolve.inwallet",
       "icon": "./assets/images/icon.png",
       "supportsTablet": true,
       "infoPlist": {
@@ -20,7 +20,7 @@
       ]
     },
     "android": {
-      "package": "com.inwallet.app",
+      "package": "in.redevolve.inwallet",
       "icon": "./assets/images/android-icon.png",
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
