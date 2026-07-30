@@ -65,6 +65,11 @@ export interface CardFaceProps {
    * status indicators absolutely over the card.
    */
   statusSlot?: React.ReactNode;
+  /**
+   * ZONE_TOP_RIGHT — e.g. Share on card detail front. On dense variants the
+   * network badge still owns this corner unless you pass a slot.
+   */
+  topRightSlot?: React.ReactNode;
   /** Printed name on card — front face only; omit when null. */
   cardholderName?: string | null;
   /**
@@ -156,6 +161,7 @@ export function CardFace({
   hint,
   onHintPress,
   statusSlot,
+  topRightSlot,
   cardholderName,
   onCardholderPress,
   elevate = true,
@@ -205,7 +211,7 @@ export function CardFace({
       ]}
     >
       <CardMaterialOverlay />
-      {/* ZONE_TOP_LEFT (bank/nickname + ZONE_STATUS) | ZONE_TOP_RIGHT (network) */}
+      {/* ZONE_TOP_LEFT (bank/nickname + ZONE_STATUS) | ZONE_TOP_RIGHT */}
       <View style={[styles.topRow, isBack && styles.topRowBack]}>
         <View style={styles.topLeft}>
           <Pressable
@@ -238,7 +244,9 @@ export function CardFace({
           </Pressable>
           {statusSlot ? <View style={styles.statusZone}>{statusSlot}</View> : null}
         </View>
-        {dense ? (
+        {topRightSlot ? (
+          <View style={styles.topRight}>{topRightSlot}</View>
+        ) : dense ? (
           <NetworkBadge network={network} size="sm" contrast="onDark" />
         ) : null}
       </View>
@@ -494,6 +502,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   topLeft: { flex: 1, minWidth: 0, flexShrink: 1 },
+  topRight: {
+    flexShrink: 0,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+  },
   /** ZONE_STATUS — wraps so multiple indicators never stack on each other. */
   statusZone: {
     flexDirection: 'row',

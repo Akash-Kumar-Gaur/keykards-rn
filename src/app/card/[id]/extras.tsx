@@ -81,13 +81,6 @@ export default function CardExtrasScreen() {
               fullWidth
               onPress={done}
             />
-            <PillButton
-              label="Add benefits later"
-              variant="ghost"
-              size="lg"
-              fullWidth
-              onPress={done}
-            />
           </View>
         </View>
       </ScrollView>

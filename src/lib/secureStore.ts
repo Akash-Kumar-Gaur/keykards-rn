@@ -20,6 +20,8 @@ export const SECURE_KEYS = {
    * links on this device. Never uploaded.
    */
   shareLinkKeys: 'keykards.shareLinkKeys.v1',
+  /** Per-user map of dismissed "add your name" nudges (JSON object). */
+  nameNudgeDismissed: 'keykards.nameNudge.dismissed.v1',
 } as const;
 
 const options: SecureStore.SecureStoreOptions = {

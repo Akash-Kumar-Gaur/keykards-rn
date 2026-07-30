@@ -25,6 +25,9 @@ import { usePalette } from '@/providers/AppThemeProvider';
 import { clearSensitiveData } from '@/stores/sensitiveStore';
 import { showDialog } from '@/stores/dialogStore';
 
+/** TEMP: flip to true before release (also re-enable plugins/withAndroidFlagSecure). */
+const SCREENSHOT_RESTRICTIONS_ENABLED = false;
+
 export function SecurityLayer({ children }: { children: React.ReactNode }) {
   const palette = usePalette();
   const [obscured, setObscured] = useState(false);
@@ -51,7 +54,7 @@ export function SecurityLayer({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (Platform.OS !== 'ios') return;
+    if (!SCREENSHOT_RESTRICTIONS_ENABLED || Platform.OS !== 'ios') return;
     const sub = ScreenCapture.addScreenshotListener(() => {
       showDialog({
         title: 'Screenshot detected',

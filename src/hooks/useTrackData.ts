@@ -27,6 +27,7 @@ import {
   type CatalogPolicyRow,
 } from '@/lib/catalogPolicy';
 import { trackKeys } from '@/hooks/useTransactions';
+import { isVerifiedGmailConnection } from '@/lib/gmailConnection';
 import type { CatalogPolicyFields, TrackSnapshot } from '@/types/track';
 
 function matchCatalogPolicy(
@@ -52,7 +53,7 @@ async function fetchTrackSnapshot(userId: string): Promise<TrackSnapshot> {
         .eq('user_id', userId),
       supabase
         .from('gmail_connections')
-        .select('status')
+        .select('status, refresh_token_encrypted')
         .eq('user_id', userId)
         .maybeSingle(),
       supabase
@@ -94,7 +95,18 @@ async function fetchTrackSnapshot(userId: string): Promise<TrackSnapshot> {
     }[]) ?? [];
 
   const pendingCount = txns.filter((t) => t.status === 'pending').length;
-  const gmailConnected = gmailRes.data?.status === 'connected';
+  const gmailRow = gmailRes.data as {
+    status: string;
+    refresh_token_encrypted: string | null;
+  } | null;
+  const gmailConnected = isVerifiedGmailConnection(
+    gmailRow
+      ? {
+          status: gmailRow.status,
+          hasVerifiedOauth: Boolean(gmailRow.refresh_token_encrypted),
+        }
+      : null,
+  );
 
   const milestones = cards
     .map((c) => {

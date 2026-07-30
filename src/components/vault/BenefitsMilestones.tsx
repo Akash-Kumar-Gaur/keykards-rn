@@ -240,11 +240,6 @@ export function BenefitsSection({
               </View>
             </View>
             {b.description ? <ExpandableText text={b.description} /> : null}
-            {b.valueEstimate != null ? (
-              <AppText variant="caption" color={palette.green}>
-                ~{formatInr(b.valueEstimate)} / yr
-              </AppText>
-            ) : null}
             <View style={styles.actions}>
               <PillButton
                 label="Edit"
@@ -472,24 +467,15 @@ export function FeePaybackIndicator({
 }) {
   const palette = usePalette();
   if (annualFee == null || annualFee <= 0) return null;
-  const valueSum = benefits.reduce((s, b) => s + (b.valueEstimate ?? 0), 0);
-  const ratio = valueSum / annualFee;
-  const covered = ratio >= 1;
 
   return (
     <GlassCard style={styles.item}>
-      <AppText variant="title">Fee payback</AppText>
-      <AppText variant="small" color={palette.textSecondary}>
-        Benefit value estimates vs annual fee (simple preview — Track will refine this).
-      </AppText>
-      <AppText variant="h2" color={covered ? palette.green : palette.amber}>
-        {formatInr(valueSum)} / {formatInr(annualFee)}
-      </AppText>
-      <ProgressBar progress={Math.min(1, ratio)} />
+      <AppText variant="title">Annual fee</AppText>
+      <AppText variant="h2">{formatInr(annualFee)}</AppText>
       <AppText variant="caption" color={palette.textTertiary}>
-        {covered
-          ? 'Estimated benefits cover the annual fee.'
-          : `${Math.round(ratio * 100)}% of fee covered by listed benefits.`}
+        {benefits.length > 0
+          ? `${benefits.length} listed benefit${benefits.length === 1 ? '' : 's'} on this card — review titles above rather than a projected rupee recovery.`
+          : 'Add benefits to see what this card offers.'}
       </AppText>
     </GlassCard>
   );

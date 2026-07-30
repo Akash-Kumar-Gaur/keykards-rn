@@ -47,7 +47,7 @@
     "react-native-quick-base64": "^3.0.1",
     "react-native-quick-crypto": "^1.1.6",
     "react-native-reanimated": "4.5.0",
-    "react-native-reanimated-carousel": "^4.0.3",
+    "react-native-reanimated-carousel": "^5.0.0",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-svg": "15.15.4",
@@ -77,7 +77,10 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "build:dev:android": "eas build --profile development --platform android",
-    "build:dev:ios": "eas build --profile development --platform ios"
+    "build:dev:ios": "eas build --profile development --platform ios",
+    "build:preview:android": "eas build --profile preview --platform android",
+    "build:prod:android": "eas build --profile production --platform android",
+    "submit:android": "eas submit --platform android --profile production"
   },
   "private": true
 }

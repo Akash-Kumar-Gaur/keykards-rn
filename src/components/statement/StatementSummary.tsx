@@ -210,7 +210,7 @@ export function StatementSummary({ data, spendChangePct }: Props) {
             <AppText variant="caption" color={palette.textSecondary}>
               {data.rewardPointsSource === 'statement'
                 ? 'From statement'
-                : 'Estimated'}
+                : 'Estimated from category rates'}
             </AppText>
           </GlassCard>
           <GlassCard

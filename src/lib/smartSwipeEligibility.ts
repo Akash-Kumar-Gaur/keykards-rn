@@ -1,48 +1,36 @@
 /**
- * Smart Swipe eligibility — single source of truth for Home layout branching.
+ * Smart Swipe eligibility — catalog-first.
  *
- * Optimize (Phase 4) is not wired yet: `smartSwipe` stays null until a real
- * recommendation exists. Home therefore shows the card carousel until BOTH
- * signal thresholds AND a non-null recommendation are present — so users never
- * sit on a disabled/empty Smart Swipe panel.
- *
- * Thresholds (chosen for a non-trivial Optimize suggestion; no prior constants
- * existed in-repo because the recommender is still a stub):
- *   - ≥ 2 cards (need a choice between cards)
- *   - ≥ 5 confirmed transactions in the last 30 days (enough spend signal)
+ * Basic recommendations need ≥2 cards and a real recommendation payload.
+ * Transaction history is NOT required (optional automation can refine later).
  */
 
 import type { SmartSwipeRecommendation } from '@/types/dashboard';
 
 export const SMART_SWIPE_MIN_CARDS = 2;
+/** @deprecated Kept for txn-count helpers; no longer gates catalog Smart Swipe. */
 export const SMART_SWIPE_MIN_TXNS_30D = 5;
 export const SMART_SWIPE_LOOKBACK_DAYS = 30;
 
 export type SmartSwipeEligibilityInput = {
   cardCount: number;
-  /** Confirmed transactions with transaction_date within the lookback window. */
-  recentConfirmedTxnCount: number;
+  /** Ignored for catalog-first eligibility; retained for API compatibility. */
+  recentConfirmedTxnCount?: number;
   recommendation: SmartSwipeRecommendation | null;
 };
 
 export type SmartSwipeEligibility = {
-  /** Account has enough cards + recent spend for Optimize to matter. */
+  /** Enough cards to choose between. */
   signalReady: boolean;
-  /** Optimize produced a concrete recommendation payload. */
   hasRecommendation: boolean;
-  /**
-   * Home shows Smart Swipe (vs the Your cards carousel) only when both are true.
-   * Re-evaluates on every dashboard load — no sticky carousel once eligible.
-   */
+  /** Home shows Smart Swipe when both are true. */
   showSmartSwipe: boolean;
 };
 
 export function deriveSmartSwipeEligibility(
   input: SmartSwipeEligibilityInput,
 ): SmartSwipeEligibility {
-  const signalReady =
-    input.cardCount >= SMART_SWIPE_MIN_CARDS &&
-    input.recentConfirmedTxnCount >= SMART_SWIPE_MIN_TXNS_30D;
+  const signalReady = input.cardCount >= SMART_SWIPE_MIN_CARDS;
   const hasRecommendation = input.recommendation != null;
   return {
     signalReady,

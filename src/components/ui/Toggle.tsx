@@ -1,10 +1,12 @@
 /**
  * Toggle — pill switch with a spring-based thumb slide (Reanimated).
+ * Theme variant embeds moon/sun glyphs in the track.
  */
 
 import React, { useEffect } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -20,17 +22,30 @@ interface ToggleProps {
   value: boolean;
   onChange: (next: boolean) => void;
   disabled?: boolean;
+  /** Moon (off) / sun (on) glyphs for theme switches. */
+  variant?: 'default' | 'theme';
+  accessibilityLabel?: string;
 }
 
-const WIDTH = 52;
 const HEIGHT = 30;
 const PAD = 3;
 const THUMB = HEIGHT - PAD * 2;
+const WIDTH_DEFAULT = 52;
+const WIDTH_THEME = 56;
 
-export function Toggle({ value, onChange, disabled = false }: ToggleProps) {
+export function Toggle({
+  value,
+  onChange,
+  disabled = false,
+  variant = 'default',
+  accessibilityLabel,
+}: ToggleProps) {
   const palette = usePalette();
   const reduced = useReducedMotion();
   const anim = useSharedValue(value ? 1 : 0);
+  const isTheme = variant === 'theme';
+  const width = isTheme ? WIDTH_THEME : WIDTH_DEFAULT;
+  const travel = width - THUMB - PAD * 2;
 
   useEffect(() => {
     anim.value = reduced
@@ -40,7 +55,7 @@ export function Toggle({ value, onChange, disabled = false }: ToggleProps) {
   }, [value, reduced]);
 
   const thumbStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: anim.value * (WIDTH - THUMB - PAD * 2) }],
+    transform: [{ translateX: anim.value * travel }],
   }));
 
   const off = palette.trackBg;
@@ -59,10 +74,39 @@ export function Toggle({ value, onChange, disabled = false }: ToggleProps) {
     <Pressable
       onPress={handlePress}
       accessibilityRole="switch"
+      accessibilityLabel={
+        accessibilityLabel ??
+        (isTheme ? (value ? 'Light theme' : 'Dark theme') : undefined)
+      }
       accessibilityState={{ checked: value, disabled }}
       hitSlop={8}
     >
-      <Animated.View style={[styles.track, trackStyle, disabled && styles.disabled]}>
+      <Animated.View
+        style={[
+          styles.track,
+          { width },
+          trackStyle,
+          disabled && styles.disabled,
+        ]}
+      >
+        {isTheme ? (
+          <>
+            <View style={[styles.glyph, styles.glyphLeft]} pointerEvents="none">
+              <Ionicons
+                name="moon"
+                size={12}
+                color={value ? 'rgba(255,255,255,0.55)' : palette.textTertiary}
+              />
+            </View>
+            <View style={[styles.glyph, styles.glyphRight]} pointerEvents="none">
+              <Ionicons
+                name="sunny"
+                size={12}
+                color={value ? palette.textOnAccent : palette.textTertiary}
+              />
+            </View>
+          </>
+        ) : null}
         <Animated.View
           style={[styles.thumb, { backgroundColor: palette.white }, thumbStyle]}
         />
@@ -73,16 +117,32 @@ export function Toggle({ value, onChange, disabled = false }: ToggleProps) {
 
 const styles = StyleSheet.create({
   track: {
-    width: WIDTH,
     height: HEIGHT,
     borderRadius: HEIGHT / 2,
     padding: PAD,
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  glyph: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 0,
+  },
+  glyphLeft: {
+    left: 4,
+  },
+  glyphRight: {
+    right: 4,
   },
   thumb: {
     width: THUMB,
     height: THUMB,
     borderRadius: THUMB / 2,
+    zIndex: 1,
   },
   disabled: { opacity: 0.5 },
 });

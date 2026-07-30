@@ -112,20 +112,33 @@ export function useGmailConnection(userId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('gmail_connections')
-        .select('user_id, connected_at, last_sync_at, status, email_address')
+        .select(
+          'user_id, connected_at, last_sync_at, status, email_address, refresh_token_encrypted',
+        )
         .eq('user_id', userId!)
         .maybeSingle();
       if (error) {
         logger.warn('Failed to load gmail connection', error);
         throw error;
       }
-      return data as {
+      if (!data) return null;
+      const row = data as {
         user_id: string;
         connected_at: string;
         last_sync_at: string | null;
         status: string;
         email_address: string | null;
-      } | null;
+        refresh_token_encrypted: string | null;
+      };
+      // Never expose the encrypted token to callers — only whether it exists.
+      return {
+        user_id: row.user_id,
+        connected_at: row.connected_at,
+        last_sync_at: row.last_sync_at,
+        status: row.status,
+        email_address: row.email_address,
+        hasVerifiedOauth: Boolean(row.refresh_token_encrypted),
+      };
     },
     staleTime: 60_000,
   });

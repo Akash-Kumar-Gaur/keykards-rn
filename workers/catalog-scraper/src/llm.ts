@@ -22,7 +22,8 @@ Return ONLY valid JSON (no markdown fences) matching this exact shape:
       "title": string,
       "category": "lounge" | "dining" | "travel" | "shopping" | "milestone" | "fuel" | "entertainment" | "other",
       "description": string,
-      "value_estimate": number | null
+      "value_estimate": number | null,
+      "period_raw": string | null
     }
   ],
   "confidence": "high" | "medium" | "low"
@@ -30,7 +31,15 @@ Return ONLY valid JSON (no markdown fences) matching this exact shape:
 
 Rules:
 - Extract ONLY facts explicitly stated or clearly listed on the page. Do not invent benefits.
-- value_estimate is an annual INR estimate when a clear rupee amount/cashback cap is stated; otherwise null. Never use spend thresholds as value_estimate.
+- value_estimate MUST always be normalized to an ANNUAL INR figure:
+  - If the source states a monthly benefit or monthly cap, multiply by 12.
+  - If quarterly / per statement quarter, multiply by 4.
+  - If per use with a monthly usage limit (e.g. ₹120 off, twice per month), compute monthly total then ×12 (₹120×2×12 = ₹2880).
+  - One-time / welcome / first-30-days benefits stay as the one-time amount (do not ×12).
+  - Never use spend thresholds (e.g. "min order ₹499") as value_estimate.
+- period_raw MUST capture the original stated period and raw figure for verification
+  (e.g. "₹240/month", "₹120×2/month", "₹4000/quarter", "₹300 one-time"). Use null only when
+  no rupee figure was stated.
 - If the page is ambiguous, partial, mostly navigation, or you had to infer, set confidence to "low".
 - Use "medium" when most fields are present but some details are unclear.
 - Use "high" only when card name, bank, and several concrete benefits are clearly readable.
@@ -175,6 +184,10 @@ function parseLlmJson(
         b.value_estimate === null || b.value_estimate === undefined
           ? null
           : Number(b.value_estimate),
+      period_raw:
+        b.period_raw === null || b.period_raw === undefined
+          ? null
+          : String(b.period_raw).trim() || null,
     }))
     .filter((b) => b.title.length > 0);
 

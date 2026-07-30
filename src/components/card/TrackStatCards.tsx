@@ -18,6 +18,7 @@ import { AppText, Eyebrow } from '@/components/ui/AppText';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { IconBadge, type BadgeTone } from '@/components/ui/IconBadge';
 import { CountUpText } from '@/components/ui/CountUpText';
+import { ConfidenceBadge } from '@/components/ui/ConfidenceBadge';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { radius, spacing, motion } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
@@ -77,6 +78,13 @@ export function TrackStatCards({
             value={pointsValue}
             sub={pointsSub}
             subColor={palette.amber}
+            badge={
+              nearest?.isEstimated ? (
+                <ConfidenceBadge kind="estimated" />
+              ) : (
+                <ConfidenceBadge kind="confirmed" />
+              )
+            }
             play={play}
             delay={0}
             onPress={() => {
@@ -93,6 +101,13 @@ export function TrackStatCards({
             value={renewalValue}
             sub={renewalSub}
             subColor={renewal.isConfirmed ? palette.green : palette.amber}
+            badge={
+              renewal.isConfirmed ? (
+                <ConfidenceBadge kind="confirmed" />
+              ) : (
+                <ConfidenceBadge kind="estimated" />
+              )
+            }
             play={play}
             delay={80}
             onPress={() => {
@@ -120,6 +135,7 @@ function StatCard({
   value,
   sub,
   subColor,
+  badge,
   play,
   delay,
   onPress,
@@ -130,6 +146,7 @@ function StatCard({
   value: string;
   sub: string;
   subColor: string;
+  badge?: React.ReactNode;
   play: boolean;
   delay: number;
   onPress: () => void;
@@ -158,7 +175,10 @@ function StatCard({
             <Ionicons name="chevron-forward" size={16} color={palette.textTertiary} />
           </View>
           <View style={styles.cardText}>
-            <Eyebrow color={palette.textTertiary}>{label}</Eyebrow>
+            <View style={styles.labelRow}>
+              <Eyebrow color={palette.textTertiary}>{label}</Eyebrow>
+              {badge}
+            </View>
             {play && value !== '—' ? (
               <CountUpText value={value} delay={delay + 80} style={styles.value} />
             ) : (
@@ -293,6 +313,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cardText: { gap: spacing.xs },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+  },
   value: { marginTop: 2 },
   sheet: { gap: spacing.lg, paddingBottom: spacing.sm },
   batchList: { gap: spacing.sm },

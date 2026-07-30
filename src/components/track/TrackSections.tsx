@@ -136,13 +136,13 @@ export function FeePaybackList({ items }: { items: FeePaybackStatus[] }) {
   if (items.length === 0) {
     return (
       <View style={styles.section}>
-        <SectionHeader title="Fee payback" empty="Add annual fees and benefits on a card." />
+        <SectionHeader title="Annual fees" empty="Add annual fees on a card." />
       </View>
     );
   }
   return (
     <View style={styles.section}>
-      <SectionHeader title="Fee payback status" />
+      <SectionHeader title="Annual fees" />
       {items.map((f) => (
         <Pressable
           key={f.cardId}
@@ -151,14 +151,19 @@ export function FeePaybackList({ items }: { items: FeePaybackStatus[] }) {
           <GlassCard style={styles.item} padding={spacing.lg}>
             <AppText variant="body">{f.cardNickname}</AppText>
             <AppText variant="small" color={palette.textSecondary}>
-              Benefits ~{formatInr(f.benefitValueSum)} vs fee {formatInr(f.annualFee)} (
-              {Math.round(f.paybackRatio * 100)}%)
+              Fee {formatInr(f.annualFee)}
             </AppText>
             {f.likelyWaiver ? (
-              <Tag label="Likely waiver" tint="rgba(52,211,153,0.15)" color={palette.green} />
+              <Tag
+                label="Likely waiver · advisory"
+                tint="rgba(52,211,153,0.15)"
+                color={palette.green}
+              />
             ) : null}
             <AppText variant="caption" color={palette.textTertiary}>
-              {f.advisoryCopy}
+              {f.likelyWaiver
+                ? f.advisoryCopy
+                : 'Review this card’s listed benefits — we don’t project a rupee recovery.'}
             </AppText>
           </GlassCard>
         </Pressable>

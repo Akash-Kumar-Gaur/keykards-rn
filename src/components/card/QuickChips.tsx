@@ -1,11 +1,12 @@
 /**
  * QuickChips — glance pills below the hero card.
- * Chips with `target` are jump actions (chevron). Chips without are read-only
+ * Chips with `target` are actions (chevron). Chips without are read-only
  * labels — softer chrome so they don’t read as dead tabs.
+ * Wraps to a second line on narrow widths instead of horizontal scroll.
  */
 
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { AppText } from '@/components/ui/AppText';
@@ -19,10 +20,9 @@ export interface QuickChip {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   tone?: ChipTone;
-  /** Section key to scroll to on press. Omit for glance-only. */
+  /** Jump/action key passed to onJump on press. Omit for glance-only. */
   target?: string;
 }
-
 
 export function QuickChips({
   chips,
@@ -34,7 +34,11 @@ export function QuickChips({
   const palette = usePalette();
   const toneMap = useMemo(
     (): Record<ChipTone, { bg: string; border: string; fg: string }> => ({
-      neutral: { bg: palette.glassFill, border: palette.glassBorder, fg: palette.textSecondary },
+      neutral: {
+        bg: palette.glassFill,
+        border: palette.glassBorder,
+        fg: palette.textSecondary,
+      },
       indigo: {
         bg: palette.indigoSoft,
         border: palette.glassBorderStrong,
@@ -55,18 +59,14 @@ export function QuickChips({
   );
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
-    >
+    <View style={styles.row}>
       {chips.map((chip) => {
         const tone = toneMap[chip.tone ?? 'neutral'];
         const pressable = Boolean(chip.target && onJump);
         const content = (
           <>
             <Ionicons name={chip.icon} size={14} color={tone.fg} />
-            <AppText variant="small" color={tone.fg}>
+            <AppText variant="small" color={tone.fg} numberOfLines={1}>
               {chip.label}
             </AppText>
             {pressable ? (
@@ -111,12 +111,14 @@ export function QuickChips({
           </Pressable>
         );
       })}
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.xs,
@@ -130,6 +132,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     borderRadius: radius.pill,
     borderWidth: 1,
+    flexShrink: 1,
+    maxWidth: '100%',
   },
   /** Read-only — no fill, quieter so it doesn’t look like a dead tab. */
   chipGlance: {

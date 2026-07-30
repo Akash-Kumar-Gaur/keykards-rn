@@ -124,7 +124,8 @@
         "title": "5% Cashback on Top Shopping Apps",
         "category": "shopping",
         "description": "5% cashback on Amazon, Flipkart, Myntra, Swiggy, Zomato, BookMyShow, Cult.fit, and other partner apps. Capped at ₹1,000 cashback per statement cycle across all partners combined. Capped at ₹1,000 CashPoints per statement cycle. Excludes EMI transactions. (5% back (cap ₹1,000/mo))",
-        "value_estimate": 1000
+        "value_estimate": 12000,
+        "period_raw": "₹1,000/statement cycle"
       },
       {
         "title": "1% Cashback on All Other Spends",
@@ -438,7 +439,8 @@
         "title": "5% Cashback on Amazon, Flipkart & Swiggy",
         "category": "shopping",
         "description": "5% cashback on Amazon, Flipkart, Myntra, Swiggy, Zomato, BookMyShow, and other partner apps. Capped at ₹400 per month combined across all partner categories. Capped at ₹400/month total across all 5% partner categories. (5% back (cap ₹400/mo))",
-        "value_estimate": 400
+        "value_estimate": 4800,
+        "period_raw": "₹400/month"
       },
       {
         "title": "Accidental Death Insurance Cover",
@@ -600,7 +602,8 @@
         "title": "5% Cashback on Grocery Stores",
         "category": "shopping",
         "description": "5% cashback at supermarkets and grocery stores. Capped at ₹500 per month. Capped at ₹500 cashback per month on grocery. Annual fee waived on ₹1.2L annual spend. (5% back (cap ₹500/mo))",
-        "value_estimate": 500
+        "value_estimate": 6000,
+        "period_raw": "₹500/month"
       },
       {
         "title": "3X Reward Points on Dining & Travel",

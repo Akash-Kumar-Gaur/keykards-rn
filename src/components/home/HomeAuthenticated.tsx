@@ -1,30 +1,40 @@
 /**
- * HomeAuthenticated — native-app dashboard (not marketing Hero).
- *
- * Hierarchy: compact header → cards/smart swipe → glance pair → milestone
- * (with Track CTA) → coverage pair → add CTA.
+ * HomeAuthenticated — reference Home layout:
+ * header → card carousel → Smart Swipe → stat tiles → portfolio insight.
  */
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, type Href } from 'expo-router';
 import { GlowBackground } from '@/components/ui/GlowBackground';
-import { AppText, Eyebrow } from '@/components/ui/AppText';
+import { AppText } from '@/components/ui/AppText';
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { SmartSwipeCard } from '@/components/home/SmartSwipeCard';
 import { HomeCardsCarousel } from '@/components/home/HomeCardsCarousel';
-import { StatTile } from '@/components/home/StatTile';
-import { MilestoneCard } from '@/components/home/MilestoneCard';
+import { PortfolioInsightsCard } from '@/components/home/PortfolioInsightsCard';
+import { HomeStatTiles } from '@/components/home/HomeStatTiles';
 import { AddCardsButton } from '@/components/home/AddCardsButton';
 import { AnimatedEntrance } from '@/components/ui/AnimatedEntrance';
+import { DisplayNameSheet } from '@/components/account/DisplayNameSheet';
+import { NameNudgeBanner } from '@/components/account/NameNudgeBanner';
 import { spacing, motion } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
 import { useAuthStore } from '@/stores/authStore';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useCards } from '@/hooks/useCards';
-import { useSmartSwipeEligibility } from '@/hooks/useSmartSwipeEligibility';
+import { useProfile } from '@/hooks/useProfile';
+import {
+  useCatalogSmartSwipe,
+  usePortfolioInsights,
+} from '@/hooks/useCatalogFirst';
 import { useRequireAuth, AUTH_REASONS } from '@/lib/requireAuth';
+import { resolveDisplayName } from '@/lib/displayName';
+import {
+  isNameNudgeDismissed,
+  setNameNudgeDismissed,
+} from '@/lib/nameNudge';
+import { logger } from '@/lib/logger';
 
 export function HomeAuthenticated() {
   const palette = usePalette();
@@ -34,13 +44,48 @@ export function HomeAuthenticated() {
   const requireAuth = useRequireAuth();
   const { data, isLoading, isError } = useDashboardData(user?.id);
   const { data: vaultCards = [], isLoading: cardsLoading } = useCards(user?.id);
-  const [smartSwipeOn, setSmartSwipeOn] = useState(true);
+  const { data: profile } = useProfile(user?.id);
+  const smart = useCatalogSmartSwipe(user?.id);
+  const portfolio = usePortfolioInsights(user?.id);
 
-  const eligibility = useSmartSwipeEligibility({
-    cardCount: data?.cardCount ?? vaultCards.length,
-    recentConfirmedTxnCount: data?.recentConfirmedTxnCount ?? 0,
-    recommendation: data?.smartSwipe ?? null,
-  });
+  const displayName = useMemo(
+    () => resolveDisplayName(user, profile?.displayName ?? null),
+    [user, profile?.displayName],
+  );
+  const needsName = Boolean(user?.id) && !displayName;
+
+  const [nudgeVisible, setNudgeVisible] = useState(false);
+  const [nameSheetOpen, setNameSheetOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!user?.id || !needsName) {
+        if (!cancelled) setNudgeVisible(false);
+        return;
+      }
+      try {
+        const dismissed = await isNameNudgeDismissed(user.id);
+        if (!cancelled) setNudgeVisible(!dismissed);
+      } catch (err) {
+        logger.warn('Failed to read name nudge flag', err);
+        if (!cancelled) setNudgeVisible(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, needsName]);
+
+  const dismissNudge = useCallback(async () => {
+    setNudgeVisible(false);
+    if (!user?.id) return;
+    try {
+      await setNameNudgeDismissed(user.id);
+    } catch (err) {
+      logger.warn('Failed to persist name nudge dismiss', err);
+    }
+  }, [user?.id]);
 
   const goProfile = () => router.push('/(tabs)/profile');
   const goAddCard = () =>
@@ -55,19 +100,19 @@ export function HomeAuthenticated() {
     });
 
   const hasCards = (data?.cardCount ?? vaultCards.length) > 0;
+  const cardCount = data?.cardCount ?? vaultCards.length;
+  const annualFeesLabel = data?.annualFees?.value ?? '₹0';
 
-  // KeyKards only surfaces real data — sections with nothing behind them are
-  // hidden entirely rather than shown as empty/placeholder tiles.
-  const expiring = data?.expiring ?? null;
-  const annualFees = data?.annualFees ?? null;
-  const warranties = data?.warranties ?? null;
-  const subscriptions = data?.subscriptions ?? null;
-  const milestone = data?.milestone ?? null;
+  const recommendedThemeId = useMemo(() => {
+    const id = smart.recommendation?.cardId;
+    if (!id) return null;
+    return vaultCards.find((c) => c.id === id)?.cardColorTheme ?? null;
+  }, [smart.recommendation?.cardId, vaultCards]);
 
-  const showGlance = Boolean(expiring || annualFees);
-  const showCoverage = Boolean(warranties || subscriptions);
-
-  const sectionDelay = motion.staggerStep * 4;
+  const carouselDelay = motion.staggerStep;
+  const smartDelay = carouselDelay + 280;
+  const statsDelay = smartDelay + 220;
+  const insightDelay = statsDelay + 200;
 
   return (
     <View style={styles.root}>
@@ -84,7 +129,14 @@ export function HomeAuthenticated() {
       >
         <HomeHeader onAccount={goProfile} />
 
-        {isLoading ? (
+        {nudgeVisible && needsName ? (
+          <NameNudgeBanner
+            onAddName={() => setNameSheetOpen(true)}
+            onDismiss={() => void dismissNudge()}
+          />
+        ) : null}
+
+        {isLoading || smart.isLoading ? (
           <View style={styles.loading}>
             <ActivityIndicator color={palette.indigo} />
           </View>
@@ -96,98 +148,60 @@ export function HomeAuthenticated() {
           </AppText>
         ) : null}
 
-        {eligibility.showSmartSwipe ? (
-          <SmartSwipeCard
-            recommendation={data?.smartSwipe ?? null}
-            enabled={smartSwipeOn && Boolean(data?.smartSwipe)}
-            onToggle={setSmartSwipeOn}
-            onGetStarted={goAddCard}
-            onAddCard={goAddCard}
-            hasCards={hasCards}
-            delay={sectionDelay}
-          />
-        ) : (
-          <HomeCardsCarousel
-            cards={vaultCards}
-            loading={cardsLoading && vaultCards.length === 0}
-            delay={sectionDelay}
-            onSelectCard={goCardDetail}
-            onAddCard={goAddCard}
-          />
-        )}
+        <HomeCardsCarousel
+          cards={vaultCards}
+          loading={cardsLoading && vaultCards.length === 0}
+          delay={carouselDelay}
+          onSelectCard={goCardDetail}
+          onAddCard={goAddCard}
+        />
 
-        {/* Glance pair — only rendered when there is real data behind it. */}
-        {showGlance ? (
-          <View style={styles.section}>
-            <Eyebrow color={palette.textTertiary} style={styles.sectionLabel}>
-              At a glance
-            </Eyebrow>
-            <View style={styles.pair}>
-              {expiring ? (
-                <StatTile
-                  data={expiring}
-                  icon="time-outline"
-                  tone="amber"
-                  delay={motion.staggerStep * 5}
-                />
-              ) : null}
-              {annualFees ? (
-                <StatTile
-                  data={annualFees}
-                  icon="checkmark-circle-outline"
-                  tone="green"
-                  delay={motion.staggerStep * 5 + 50}
-                />
-              ) : null}
-            </View>
-          </View>
+        <SmartSwipeCard
+          recommendation={smart.recommendation}
+          category={smart.category}
+          categories={smart.categories}
+          onSelectCategory={smart.setCategory}
+          onOpenCard={
+            smart.recommendation
+              ? () => goCardDetail(smart.recommendation!.cardId)
+              : undefined
+          }
+          onAddCard={hasCards ? goAddCard : undefined}
+          hasCards={hasCards}
+          cardCount={cardCount}
+          themeId={recommendedThemeId}
+          delay={smartDelay}
+        />
+
+        {hasCards ? (
+          <HomeStatTiles
+            cardCount={cardCount}
+            annualFeesLabel={annualFeesLabel}
+            delay={statsDelay}
+          />
         ) : null}
 
-        {/* Milestone — only shown once there is real spend progress. */}
-        {milestone ? (
-          <AnimatedEntrance
-            delay={motion.staggerStep * 6}
-            style={styles.milestoneSection}
-          >
-            <MilestoneCard
-              data={milestone}
-              footerLabel="Open Track"
-              onFooterPress={() => router.push('/(tabs)/track')}
-            />
+        {portfolio.insights ? (
+          <PortfolioInsightsCard
+            insights={portfolio.insights}
+            delay={insightDelay}
+          />
+        ) : null}
+
+        {/* Single primary Add CTA when vault is empty; hidden once cards exist. */}
+        {!hasCards ? (
+          <AnimatedEntrance delay={insightDelay + 120} style={styles.cta}>
+            <AddCardsButton onPress={goAddCard} />
           </AnimatedEntrance>
         ) : null}
-
-        {/* Coverage pair — only rendered when warranties/subscriptions exist. */}
-        {showCoverage ? (
-          <View style={styles.section}>
-            <Eyebrow color={palette.textTertiary} style={styles.sectionLabel}>
-              Coverage
-            </Eyebrow>
-            <View style={styles.pair}>
-              {warranties ? (
-                <StatTile
-                  data={warranties}
-                  icon="shield-checkmark-outline"
-                  tone="indigo"
-                  delay={motion.staggerStep * 7}
-                />
-              ) : null}
-              {subscriptions ? (
-                <StatTile
-                  data={subscriptions}
-                  icon="repeat-outline"
-                  tone="indigo"
-                  delay={motion.staggerStep * 7 + 50}
-                />
-              ) : null}
-            </View>
-          </View>
-        ) : null}
-
-        <AnimatedEntrance delay={motion.staggerStep * 8} style={styles.cta}>
-          <AddCardsButton onPress={goAddCard} />
-        </AnimatedEntrance>
       </ScrollView>
+
+      <DisplayNameSheet
+        visible={nameSheetOpen}
+        onClose={() => setNameSheetOpen(false)}
+        userId={user?.id}
+        initialName={displayName}
+      />
     </View>
   );
 }
@@ -201,20 +215,5 @@ const styles = StyleSheet.create({
   },
   loading: { alignItems: 'center', paddingVertical: spacing.sm },
   error: { marginBottom: spacing.xs },
-  section: {
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  sectionLabel: {
-    paddingHorizontal: 2,
-  },
-  pair: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  milestoneSection: {
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-  },
   cta: { marginTop: spacing.lg },
 });

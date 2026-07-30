@@ -439,6 +439,46 @@ export function useDeleteCard(userId: string | undefined) {
   });
 }
 
+/**
+ * Batch delete — one `.in('id', ids)` round-trip; Postgres ON DELETE CASCADE
+ * clears benefits, milestones, cycles, shares, statements, etc. (same as
+ * single delete). Transactions.card_id is SET NULL, not removed.
+ */
+export function useDeleteCards(userId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (cardIds: string[]) => {
+      const ids = [...new Set(cardIds.filter(Boolean))];
+      if (ids.length === 0) return ids;
+      const { error } = await supabase.from('cards').delete().in('id', ids);
+      if (error) {
+        logger.warn('Failed to delete cards', error);
+        throw error;
+      }
+      return ids;
+    },
+    onSuccess: (cardIds) => {
+      if (userId) {
+        const gone = new Set(cardIds);
+        qc.setQueryData<VaultCard[]>(cardKeys.list(userId), (prev) =>
+          prev ? prev.filter((c) => !gone.has(c.id)) : prev,
+        );
+      }
+      for (const id of cardIds) {
+        qc.removeQueries({ queryKey: cardKeys.detail(id) });
+        qc.removeQueries({ queryKey: cardKeys.benefits(id) });
+        qc.removeQueries({ queryKey: cardKeys.milestones(id) });
+      }
+      if (userId) {
+        qc.invalidateQueries({ queryKey: cardKeys.list(userId) });
+        qc.invalidateQueries({ queryKey: ['dashboard', userId] });
+        qc.invalidateQueries({ queryKey: trackKeys.snapshot(userId) });
+        qc.invalidateQueries({ queryKey: trackKeys.attention(userId) });
+      }
+    },
+  });
+}
+
 export function useCreateBenefit(cardId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({

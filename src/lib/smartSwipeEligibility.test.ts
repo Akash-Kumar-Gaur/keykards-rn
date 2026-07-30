@@ -1,10 +1,9 @@
 /**
- * Smart Swipe eligibility — Home shows recommendation only when signal + payload exist.
+ * Smart Swipe eligibility — catalog-first (no txn gate).
  */
 
 import {
   SMART_SWIPE_MIN_CARDS,
-  SMART_SWIPE_MIN_TXNS_30D,
   countRecentConfirmedTxns,
   deriveSmartSwipeEligibility,
 } from './smartSwipeEligibility';
@@ -13,15 +12,15 @@ import type { SmartSwipeRecommendation } from '@/types/dashboard';
 const rec: SmartSwipeRecommendation = {
   category: 'Dining',
   cardName: 'Axis Ace',
-  rewardValue: '5×',
-  rewardLabel: 'points',
+  rewardValue: '5%',
+  rewardLabel: 'Cashback',
 };
 
 describe('deriveSmartSwipeEligibility', () => {
-  it('shows carousel (not Smart Swipe) when recommendation is null even with signal', () => {
+  it('shows carousel when recommendation is null even with 2+ cards', () => {
     const e = deriveSmartSwipeEligibility({
       cardCount: 4,
-      recentConfirmedTxnCount: 20,
+      recentConfirmedTxnCount: 0,
       recommendation: null,
     });
     expect(e.signalReady).toBe(true);
@@ -29,27 +28,10 @@ describe('deriveSmartSwipeEligibility', () => {
     expect(e.showSmartSwipe).toBe(false);
   });
 
-  it('shows carousel when under card or txn thresholds despite a recommendation', () => {
-    expect(
-      deriveSmartSwipeEligibility({
-        cardCount: 1,
-        recentConfirmedTxnCount: 20,
-        recommendation: rec,
-      }).showSmartSwipe,
-    ).toBe(false);
-    expect(
-      deriveSmartSwipeEligibility({
-        cardCount: 3,
-        recentConfirmedTxnCount: SMART_SWIPE_MIN_TXNS_30D - 1,
-        recommendation: rec,
-      }).showSmartSwipe,
-    ).toBe(false);
-  });
-
-  it('shows Smart Swipe when ≥2 cards, ≥5 recent txns, and a real recommendation', () => {
+  it('shows Smart Swipe with ≥2 cards and a recommendation — zero txns', () => {
     const e = deriveSmartSwipeEligibility({
       cardCount: SMART_SWIPE_MIN_CARDS,
-      recentConfirmedTxnCount: SMART_SWIPE_MIN_TXNS_30D,
+      recentConfirmedTxnCount: 0,
       recommendation: rec,
     });
     expect(e.signalReady).toBe(true);
@@ -57,20 +39,14 @@ describe('deriveSmartSwipeEligibility', () => {
     expect(e.showSmartSwipe).toBe(true);
   });
 
-  it('re-evaluates cleanly when signal crosses the threshold (no sticky carousel)', () => {
-    const before = deriveSmartSwipeEligibility({
-      cardCount: 1,
-      recentConfirmedTxnCount: 2,
-      recommendation: null,
-    });
-    expect(before.showSmartSwipe).toBe(false);
-
-    const after = deriveSmartSwipeEligibility({
-      cardCount: 3,
-      recentConfirmedTxnCount: 8,
-      recommendation: rec,
-    });
-    expect(after.showSmartSwipe).toBe(true);
+  it('hides Smart Swipe with only one card', () => {
+    expect(
+      deriveSmartSwipeEligibility({
+        cardCount: 1,
+        recentConfirmedTxnCount: 20,
+        recommendation: rec,
+      }).showSmartSwipe,
+    ).toBe(false);
   });
 });
 

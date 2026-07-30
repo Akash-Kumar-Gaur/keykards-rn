@@ -24,6 +24,8 @@ export interface LlmBenefit {
   category: LlmBenefitCategory;
   description: string;
   value_estimate: number | null;
+  /** Original stated period + figure, e.g. "₹240/month" — for verification. */
+  period_raw?: string | null;
 }
 
 export interface LlmExtraction {
@@ -40,7 +42,8 @@ export type ScrapeStatus =
   | 'success'
   | 'parse_failed'
   | 'fetch_failed'
-  | 'low_confidence';
+  | 'low_confidence'
+  | 'needs_review';
 
 export interface FetchResult {
   text: string;

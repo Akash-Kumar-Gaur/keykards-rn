@@ -1,14 +1,13 @@
 /**
- * SmartSwipeCard — recommendation panel for authenticated Home only.
- *
- * Props-driven: pass a real recommendation, or leave it null to render the
- * empty state ("Add a card to get recommendations"). Never invents a card name.
+ * SmartSwipeCard — category chips + recommended card fact row.
+ * Catalog facts only — no ₹ earn estimates.
  */
 
-import React, { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -17,36 +16,47 @@ import Animated, {
 import { GlassCard } from '@/components/ui/GlassCard';
 import { AppText, Eyebrow } from '@/components/ui/AppText';
 import { PillButton } from '@/components/ui/PillButton';
-import { Tag } from '@/components/ui/Tag';
-import { Toggle } from '@/components/ui/Toggle';
-import { OneShotShimmer } from '@/components/ui/OneShotShimmer';
-import { spacing } from '@/theme';
+import { spacing, radius } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import type { SmartSwipeRecommendation } from '@/types/dashboard';
+import { getCardTheme } from '@/lib/cardThemes';
+import type { CatalogSmartSwipeResult } from '@/lib/catalogSmartSwipe';
+import type { BenefitCategory, CardColorTheme } from '@/types/card';
+import { BENEFIT_CATEGORY_META } from '@/components/card/benefitCategoryMeta';
 
 interface SmartSwipeCardProps {
-  recommendation: SmartSwipeRecommendation | null;
-  enabled: boolean;
-  onToggle: (next: boolean) => void;
-  onGetStarted: () => void;
+  recommendation: CatalogSmartSwipeResult | null;
+  category: BenefitCategory;
+  categories: BenefitCategory[];
+  onSelectCategory: (c: BenefitCategory) => void;
+  onOpenCard?: () => void;
   onAddCard?: () => void;
   delay?: number;
   hasCards: boolean;
+  cardCount: number;
+  /** Theme for the recommended card’s color swatch. */
+  themeId?: CardColorTheme | null;
 }
 
 export function SmartSwipeCard({
   recommendation,
-  enabled,
-  onToggle,
-  onGetStarted,
+  category,
+  categories,
+  onSelectCategory,
+  onOpenCard,
   onAddCard,
   delay = 0,
   hasCards,
+  cardCount,
+  themeId,
 }: SmartSwipeCardProps) {
   const palette = usePalette();
   const reduced = useReducedMotion();
   const progress = useSharedValue(0);
+  const resultProgress = useSharedValue(1);
+  const [display, setDisplay] = useState(recommendation);
+  const pendingRef = useRef(recommendation);
+  const prevKey = useRef<string | null>(null);
 
   useEffect(() => {
     if (reduced) {
@@ -55,113 +65,205 @@ export function SmartSwipeCard({
     }
     progress.value = withDelay(
       delay,
-      withTiming(1, { duration: 520, easing: Easing.out(Easing.cubic) }),
+      withTiming(1, { duration: 480, easing: Easing.out(Easing.cubic) }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduced]);
+  }, [reduced, delay]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const commitResult = () => {
+    setDisplay(pendingRef.current);
+    resultProgress.value = withTiming(1, {
+      duration: reduced ? 0 : 220,
+      easing: Easing.out(Easing.cubic),
+    });
+  };
+
+  useEffect(() => {
+    const key = recommendation
+      ? `${recommendation.cardId}:${recommendation.categoryKey}:${recommendation.rewardValue}`
+      : `empty:${category}`;
+    pendingRef.current = recommendation;
+
+    if (prevKey.current === null) {
+      prevKey.current = key;
+      setDisplay(recommendation);
+      return;
+    }
+    if (prevKey.current === key) return;
+    prevKey.current = key;
+
+    if (reduced) {
+      setDisplay(recommendation);
+      resultProgress.value = 1;
+      return;
+    }
+
+    resultProgress.value = withTiming(
+      0,
+      { duration: 140, easing: Easing.in(Easing.quad) },
+      (finished) => {
+        if (finished) runOnJS(commitResult)();
+      },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recommendation, category, reduced]);
+
+  const cardStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
-    transform: [{ scale: 0.95 + progress.value * 0.05 }],
+    transform: [{ scale: 0.96 + progress.value * 0.04 }],
   }));
 
-  const empty = !recommendation;
+  const resultStyle = useAnimatedStyle(() => ({
+    opacity: resultProgress.value,
+    transform: [{ translateY: (1 - resultProgress.value) * 8 }],
+  }));
+
+  const needMoreCards = cardCount < 2;
+  const empty = !display;
+  const swatchColors = getCardTheme(themeId ?? 'generic-slate').colors;
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View style={cardStyle}>
       <GlassCard strong padding={spacing.xl} style={styles.card} elevation="raised">
-        <OneShotShimmer delay={delay + 400} />
         <View style={styles.headerRow}>
-          <Tag label="Smart Swipe" />
-          <Toggle value={enabled} onChange={onToggle} disabled={empty} />
+          <AppText variant="title">Smart Swipe</AppText>
+          {!empty ? (
+            <Eyebrow color={palette.indigo} style={styles.badge}>
+              Best card found
+            </Eyebrow>
+          ) : null}
         </View>
 
-        {empty ? (
-          <View style={styles.body}>
-            <AppText variant="body" color={palette.textSecondary}>
-              {hasCards
-                ? 'Recommendations unlock once Optimize has enough spend history.'
-                : 'Add a card to get recommendations'}
-            </AppText>
-            <AppText variant="h2" style={styles.cardName}>
-              {hasCards ? 'No recommendation yet' : 'Nothing to recommend'}
-            </AppText>
-            <View style={styles.emptyCta}>
-              <PillButton
-                label={hasCards ? 'Check back soon' : 'Add a card'}
-                variant="primary"
-                size="md"
-                onPress={hasCards ? onGetStarted : onAddCard ?? onGetStarted}
-              />
-            </View>
-          </View>
-        ) : (
-          <>
-            <View style={styles.body}>
-              <AppText variant="body" color={palette.textSecondary}>
-                Next best card for {recommendation.category}
-              </AppText>
-              <AppText variant="h2" style={styles.cardName}>
-                {recommendation.cardName}
-              </AppText>
-            </View>
-
-            <View style={[styles.divider, { backgroundColor: palette.glassBorderStrong }]} />
-
-            <View style={styles.footerRow}>
-              <View style={styles.earnBlock}>
-                <Eyebrow color={palette.textTertiary}>{recommendation.rewardLabel}</Eyebrow>
-                <AppText variant="title" color={palette.indigo} style={styles.earnValue}>
-                  {recommendation.rewardValue}
+        <View style={styles.chips}>
+          {categories.map((c) => {
+            const selected = c === category;
+            const meta = BENEFIT_CATEGORY_META[c];
+            return (
+              <Pressable
+                key={c}
+                onPress={() => onSelectCategory(c)}
+                style={[
+                  styles.chip,
+                  {
+                    borderColor: selected ? palette.indigo : palette.glassBorder,
+                    backgroundColor: selected ? palette.indigo : 'transparent',
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                accessibilityLabel={meta.label}
+              >
+                <AppText
+                  variant="caption"
+                  color={selected ? palette.textOnAccent : palette.textSecondary}
+                >
+                  {meta.label}
                 </AppText>
-              </View>
-              <PillButton
-                label="Get started"
-                variant="primary"
-                size="md"
-                onPress={onGetStarted}
-              />
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <Animated.View style={[styles.result, resultStyle]}>
+          {empty ? (
+            <View style={styles.emptyBody}>
+              <AppText variant="body" color={palette.textSecondary}>
+                {needMoreCards
+                  ? hasCards
+                    ? 'Add one more card to compare which one fits each category.'
+                    : 'Add your cards to see which one to swipe for dining, fuel, and more.'
+                  : `No ${BENEFIT_CATEGORY_META[category].label.toLowerCase()} benefit listed on your cards yet.`}
+              </AppText>
+              {needMoreCards && hasCards && onAddCard ? (
+                <PillButton
+                  label="Add a card"
+                  variant="primary"
+                  size="md"
+                  onPress={onAddCard}
+                />
+              ) : null}
             </View>
-          </>
-        )}
+          ) : (
+            <Pressable
+              onPress={onOpenCard}
+              style={styles.resultRow}
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${display.cardName}`}
+            >
+              <View
+                style={[
+                  styles.swatch,
+                  {
+                    backgroundColor: swatchColors[0],
+                    borderColor: 'rgba(255,255,255,0.12)',
+                  },
+                ]}
+              />
+              <View style={styles.resultText}>
+                <AppText variant="title" numberOfLines={1}>
+                  {display.cardName}
+                </AppText>
+                {display.rewardValue ? (
+                  <AppText
+                    variant="small"
+                    color={palette.textSecondary}
+                    numberOfLines={2}
+                  >
+                    {display.rewardValue}
+                  </AppText>
+                ) : null}
+              </View>
+            </Pressable>
+          )}
+        </Animated.View>
       </GlassCard>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    overflow: 'hidden',
-  },
+  card: { overflow: 'hidden' },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: spacing.md,
   },
-  body: {
+  badge: { flexShrink: 0 },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  chip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill ?? 999,
+    borderWidth: 1,
+  },
+  result: {
     marginTop: spacing.xl,
-    gap: spacing.xs,
+    minHeight: 52,
   },
-  cardName: {
-    marginTop: 2,
-  },
-  emptyCta: {
-    marginTop: spacing.xl,
-    alignItems: 'flex-start',
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth * 2,
-    marginVertical: spacing.xl,
-  },
-  footerRow: {
+  resultRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: spacing.md,
   },
-  earnBlock: {
-    gap: spacing.xs,
+  swatch: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
   },
-  earnValue: {
-    marginTop: 2,
+  resultText: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  emptyBody: {
+    gap: spacing.md,
+    alignItems: 'flex-start',
   },
 });

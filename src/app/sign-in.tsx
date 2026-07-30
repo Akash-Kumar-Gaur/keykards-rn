@@ -24,6 +24,10 @@ import { usePalette } from '@/providers/AppThemeProvider';
 import { useAuthStore } from '@/stores/authStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import {
+  DISPLAY_NAME_MAX,
+  validateDisplayNameInput,
+} from '@/lib/displayName';
 
 function initialAuthMode(raw: string | string[] | undefined): AuthMode {
   const value = Array.isArray(raw) ? raw[0] : raw;
@@ -54,6 +58,7 @@ export default function SignInScreen() {
   const contextualReason = reasonText(reasonParam);
 
   const [mode, setMode] = useState<AuthMode>(() => initialAuthMode(modeParam));
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -72,6 +77,13 @@ export default function SignInScreen() {
   const submit = async () => {
     setError(null);
     setNotice(null);
+    if (mode === 'signUp') {
+      const nameError = validateDisplayNameInput(fullName);
+      if (nameError) {
+        setError(nameError);
+        return;
+      }
+    }
     if (!email.trim() || !password) {
       setError('Enter your email and password.');
       return;
@@ -84,7 +96,7 @@ export default function SignInScreen() {
     const result =
       mode === 'signIn'
         ? await signIn(email.trim(), password)
-        : await signUp(email.trim(), password);
+        : await signUp(email.trim(), password, fullName);
     setLoading(false);
 
     if (result.error) {
@@ -171,6 +183,17 @@ export default function SignInScreen() {
           />
 
           <View style={styles.form}>
+            {mode === 'signUp' ? (
+              <FloatingLabelField
+                label="Full name"
+                icon="person-outline"
+                value={fullName}
+                onChangeText={(t) => setFullName(t.slice(0, DISPLAY_NAME_MAX))}
+                autoCapitalize="words"
+                autoComplete="name"
+                maxLength={DISPLAY_NAME_MAX}
+              />
+            ) : null}
             <FloatingLabelField
               label="Email"
               icon="mail-outline"

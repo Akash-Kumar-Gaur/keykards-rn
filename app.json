@@ -10,7 +10,7 @@
     "backgroundColor": "#0A0A14",
     "ios": {
       "bundleIdentifier": "com.keykards.app",
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "supportsTablet": true,
       "infoPlist": {
         "NSFaceIDUsageDescription": "KeyKards uses Face ID to unlock the app and protect your card details."
@@ -19,6 +19,7 @@
     },
     "android": {
       "package": "com.keykards.app",
+      "icon": "./assets/images/android-icon.png",
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#0A0A14",
@@ -76,6 +77,7 @@
       ],
       "react-native-quick-crypto",
       "./plugins/withAndroidFlagSecure",
+      "./plugins/withAndroidScreenshotMode",
       "./plugins/withAndroidNfc",
       "expo-build-properties"
     ],

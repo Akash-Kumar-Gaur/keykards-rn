@@ -2,7 +2,7 @@
  * BenefitsExplorer — the benefits section as an explorable experience:
  *   • animated category filter chips (reusing AnimatedFilterChips)
  *   • a horizontally-scrollable carousel of teaser cards
- *   • tap a card → bottom sheet with the full description + value estimate
+ *   • tap a card → bottom sheet with the full description
  *
  * Teaser cards stagger in (scale+fade) when the section scrolls into view
  * (driven by the `play` prop) and press-scale on tap. Detail uses a bottom
@@ -31,7 +31,6 @@ import {
   type FilterChipOption,
 } from '@/components/vault/AnimatedFilterChips';
 import { categoryMeta, teaserLine } from './benefitCategoryMeta';
-import { formatInr } from '@/lib/cardUtils';
 import { radius, spacing, motion } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -217,13 +216,6 @@ function BenefitTeaserCard({
           >
           <View style={styles.teaserTop}>
             <IconBadge icon={meta.icon} tone={meta.tone} size={38} />
-            {benefit.valueEstimate != null ? (
-              <View style={[styles.valuePill, { backgroundColor: palette.greenSoft }]}>
-                <AppText variant="caption" color={palette.green}>
-                  ~{formatInr(benefit.valueEstimate)}
-                </AppText>
-              </View>
-            ) : null}
           </View>
           <AppText variant="bodyLg" numberOfLines={2} style={styles.teaserTitle}>
             {benefit.title}
@@ -277,28 +269,15 @@ function BenefitDetailSheet({
             </View>
           </View>
 
-          {shown.valueEstimate != null ? (
-            <View
-              style={[
-                styles.detailValue,
-                {
-                  backgroundColor: palette.glassFill,
-                  borderColor: palette.glassBorder,
-                },
-              ]}
-            >
-              <AppText variant="small" color={palette.textSecondary}>
-                Estimated annual value
-              </AppText>
-              <AppText variant="stat" color={palette.green}>
-                {formatInr(shown.valueEstimate)}
-              </AppText>
-            </View>
-          ) : null}
-
-          <AppText variant="body" color={palette.textSecondary} style={styles.detailBody}>
-            {shown.description?.trim() || 'No description added for this benefit yet.'}
-          </AppText>
+          {shown.description?.trim() ? (
+            <AppText variant="body" color={palette.textSecondary} style={styles.detailBody}>
+              {shown.description.trim()}
+            </AppText>
+          ) : (
+            <AppText variant="body" color={palette.textSecondary} style={styles.detailBody}>
+              No description added for this benefit yet.
+            </AppText>
+          )}
         </View>
       ) : null}
     </BottomSheet>

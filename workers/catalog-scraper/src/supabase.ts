@@ -6,6 +6,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { config } from './config.js';
 import { mapBenefitCategory, mapNetwork, coerceCatalogTheme } from './categoryMap.js';
 import { serializeError } from './errors.js';
+import { normalizeExtractionBenefits } from './annualizeBenefits.js';
 import type { CatalogSource } from './sources.js';
 import type { LlmExtraction, ScrapeStatus } from './types.js';
 
@@ -92,8 +93,8 @@ export async function upsertAutoCatalog(opts: {
   /** When true (CLI --force --ids), refresh even protected manual seed rows. */
   overwriteManual?: boolean;
 }): Promise<
-  | { outcome: 'inserted' | 'updated'; catalogId: string }
-  | { outcome: 'skipped_manual' | 'dry_run'; catalogId: null }
+  | { outcome: 'inserted' | 'updated'; catalogId: string; needsReview: boolean }
+  | { outcome: 'skipped_manual' | 'dry_run'; catalogId: null; needsReview: false }
 > {
   const bank = opts.extraction.bank_name || opts.source.issuer;
   const card = opts.extraction.card_name || opts.source.name;
@@ -103,7 +104,30 @@ export async function upsertAutoCatalog(opts: {
   );
   // Bank-inspired default wins unless LLM returns a known allowed theme key.
   const theme = coerceCatalogTheme(opts.extraction.card_color_theme, bank);
-  const benefits = opts.extraction.benefits.map((b) => ({
+  const annualFee =
+    opts.extraction.annual_fee ?? opts.source.annualFee ?? null;
+  const normalized = normalizeExtractionBenefits(
+    opts.extraction.benefits.map((b) => ({
+      title: b.title,
+      category: b.category,
+      description: b.description,
+      value_estimate:
+        b.value_estimate != null && Number.isFinite(b.value_estimate)
+          ? b.value_estimate
+          : null,
+      period_raw: b.period_raw ?? null,
+    })),
+    annualFee,
+  );
+
+  if (normalized.flags.length > 0) {
+    console.warn(
+      '  [value-sanity]',
+      normalized.flags.join('; '),
+    );
+  }
+
+  const benefits = normalized.benefits.map((b) => ({
     title: b.title,
     category: mapBenefitCategory(b.category),
     description: b.description,
@@ -111,26 +135,31 @@ export async function upsertAutoCatalog(opts: {
       b.value_estimate != null && Number.isFinite(b.value_estimate)
         ? b.value_estimate
         : null,
+    period_raw: b.period_raw ?? null,
   }));
+
+  // Implausible annualized value vs fee → park as needs_review, do not auto-publish.
+  const sourceTag = normalized.implausibleVsFee
+    ? ('needs_review' as const)
+    : ('auto' as const);
 
   const row = {
     bank_name: bank,
     card_name: card,
     network,
     default_benefits: benefits,
-    default_annual_fee:
-      opts.extraction.annual_fee ?? opts.source.annualFee ?? null,
+    default_annual_fee: annualFee,
     card_color_theme: theme,
     default_color_theme: theme,
-    source: 'auto' as const,
+    source: sourceTag,
     last_verified_at: new Date().toISOString(),
     raw_source_url: opts.sourceUrl,
     refresh_priority: opts.source.refreshPriority ?? 'standard',
   };
 
   if (opts.dryRun) {
-    console.log('  [dry-run] would upsert', row.bank_name, row.card_name);
-    return { outcome: 'dry_run', catalogId: null };
+    console.log('  [dry-run] would upsert', row.bank_name, row.card_name, sourceTag);
+    return { outcome: 'dry_run', catalogId: null, needsReview: false };
   }
 
   const existing = await getSupabase()
@@ -144,7 +173,7 @@ export async function upsertAutoCatalog(opts: {
 
   if (existing.data?.source === 'manual' && !opts.overwriteManual) {
     console.log('  [skip] manual row protected', bank, card);
-    return { outcome: 'skipped_manual', catalogId: null };
+    return { outcome: 'skipped_manual', catalogId: null, needsReview: false };
   }
 
   if (existing.data?.id) {
@@ -153,7 +182,11 @@ export async function upsertAutoCatalog(opts: {
       .update(row)
       .eq('id', existing.data.id);
     if (error) throwDb(error);
-    return { outcome: 'updated', catalogId: existing.data.id };
+    return {
+      outcome: 'updated',
+      catalogId: existing.data.id,
+      needsReview: sourceTag === 'needs_review',
+    };
   }
 
   const inserted = await getSupabase()
@@ -162,5 +195,9 @@ export async function upsertAutoCatalog(opts: {
     .select('id')
     .single();
   if (inserted.error) throwDb(inserted.error);
-  return { outcome: 'inserted', catalogId: inserted.data.id as string };
+  return {
+    outcome: 'inserted',
+    catalogId: inserted.data.id as string,
+    needsReview: sourceTag === 'needs_review',
+  };
 }

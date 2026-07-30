@@ -92,6 +92,7 @@ export interface CardBenefit {
   category: BenefitCategory;
   description: string;
   valueEstimate: number | null;
+  periodRaw?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -138,6 +139,8 @@ export interface CatalogBenefitSeed {
   category: BenefitCategory;
   description: string;
   value_estimate: number | null;
+  /** Original stated period + figure (e.g. "₹240/month") when known. */
+  period_raw?: string | null;
 }
 
 export interface CardCatalogEntry {

@@ -1,5 +1,6 @@
 /**
  * Share history for one card — active + past shares, copy link, revoke-now.
+ * Active rows: swipe left to reveal Revoke (same pattern as Vault delete).
  */
 
 import React, { useState } from 'react';
@@ -19,6 +20,7 @@ import { GlowBackground } from '@/components/ui/GlowBackground';
 import { AppText, Eyebrow } from '@/components/ui/AppText';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { PillButton } from '@/components/ui/PillButton';
+import { VaultSwipeableRow } from '@/components/vault/VaultSwipeableRow';
 import { useCard } from '@/hooks/useCards';
 import { useCardShares, useRevokeCardShare } from '@/hooks/useCardShares';
 import {
@@ -79,6 +81,7 @@ export default function CardSharesScreen() {
   const { data: shares = [], isLoading, refetch } = useCardShares(id);
   const revoke = useRevokeCardShare(id!);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [openRowId, setOpenRowId] = useState<string | null>(null);
 
   const onCopy = async (share: CardShareRow) => {
     const status = cardShareStatus(share);
@@ -115,6 +118,7 @@ export default function CardSharesScreen() {
   };
 
   const onRevoke = async (share: CardShareRow) => {
+    setOpenRowId(null);
     const ok = await confirmDialog({
       title: 'Revoke this link?',
       message:
@@ -174,7 +178,7 @@ export default function CardSharesScreen() {
         </GlassCard>
         <AppText variant="body" color={palette.textSecondary}>
           Active and past links for this card. Revoked and expired links stay
-          here for your records.
+          here for your records. Swipe an active link left to revoke.
         </AppText>
 
         <PillButton
@@ -200,9 +204,8 @@ export default function CardSharesScreen() {
               const status = cardShareStatus(s);
               const inactive = status !== 'active';
               const justCopied = copiedId === s.id;
-              return (
+              const cardBody = (
                 <GlassCard
-                  key={s.id}
                   padding={spacing.lg}
                   style={[styles.row, inactive && styles.rowInactive]}
                 >
@@ -246,24 +249,31 @@ export default function CardSharesScreen() {
                           {justCopied ? 'Copied' : 'Copy link'}
                         </AppText>
                       </Pressable>
-                      <Pressable
-                        onPress={() => onRevoke(s)}
-                        disabled={revoke.isPending}
-                        style={styles.actionBtn}
-                        accessibilityRole="button"
-                      >
-                        <Ionicons
-                          name="ban-outline"
-                          size={16}
-                          color={palette.amber}
-                        />
-                        <AppText variant="small" color={palette.amber}>
-                          Revoke now
-                        </AppText>
-                      </Pressable>
                     </View>
                   ) : null}
                 </GlassCard>
+              );
+
+              if (inactive) {
+                return <View key={s.id}>{cardBody}</View>;
+              }
+
+              return (
+                <VaultSwipeableRow
+                  key={s.id}
+                  rowId={s.id}
+                  openRowId={openRowId}
+                  onOpenChange={setOpenRowId}
+                  onActionPress={() => {
+                    void onRevoke(s);
+                  }}
+                  actionLabel="Revoke"
+                  actionIcon="ban-outline"
+                  actionAccessibilityLabel="Revoke share link"
+                  disabled={revoke.isPending}
+                >
+                  {cardBody}
+                </VaultSwipeableRow>
               );
             })}
           </View>

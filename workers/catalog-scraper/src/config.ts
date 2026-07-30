@@ -46,7 +46,7 @@ export const config = {
   /** Pending known_cards → failed after this many consecutive extraction errors. */
   extractionFailThreshold: Number(process.env.EXTRACTION_FAIL_THRESHOLD ?? 3),
   /** Max listing sources per discovery crawl. */
-  maxDiscoverySourcesPerRun: Number(process.env.MAX_DISCOVERY_SOURCES_PER_RUN ?? 20),
+  maxDiscoverySourcesPerRun: Number(process.env.MAX_DISCOVERY_SOURCES_PER_RUN ?? 40),
   /** Delay between bank page fetches (ms). */
   fetchDelayMs: Number(process.env.FETCH_DELAY_MS ?? 2500),
   /** Max chars of cleaned page text sent to the LLM. */

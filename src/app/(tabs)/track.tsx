@@ -1,6 +1,6 @@
 /**
- * Track tab — scalable dashboard: overview hero + horizontal category carousels.
- * Clipboard / OCR / pending Gmail confirm via shared parsing pill + bottom sheet.
+ * Track tab — Checklist / Calendar / Protection segments.
+ * Catalog-first baseline on Checklist; imports stay optional.
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -12,18 +12,21 @@ import {
   View,
 } from 'react-native';
 import Animated, {
+  Easing,
   useAnimatedScrollHandler,
+  useAnimatedStyle,
   useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, type Href } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { GlowBackground } from '@/components/ui/GlowBackground';
 import { AppText, Eyebrow } from '@/components/ui/AppText';
 import { AnimatedEntrance } from '@/components/ui/AnimatedEntrance';
 import { PillButton } from '@/components/ui/PillButton';
 import { FloatingLabelField } from '@/components/auth/FloatingLabelField';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { ScrollRevealProvider } from '@/components/ui/ScrollReveal';
 import {
   ConfirmTransactionsSheet,
@@ -36,10 +39,10 @@ import {
   type ParsingPillState,
 } from '@/components/track/ParsingStatusPill';
 import { MilestoneResetNoticeBanner } from '@/components/card/MilestoneResetNoticeBanner';
-import { TrackDashboard } from '@/components/track/TrackDashboard';
 import { TrackThemeProvider } from '@/components/track/TrackTheme';
-import { TrackCardScopeFab } from '@/components/track/TrackCardScopeFab';
-import { TrackCardScopeSheet } from '@/components/track/TrackCardScopeSheet';
+import { TrackChecklistPanel } from '@/components/track/TrackChecklistPanel';
+import { TrackCalendarPanel } from '@/components/track/TrackCalendarPanel';
+import { TrackProtectionPanel } from '@/components/track/TrackProtectionPanel';
 import { readClipboardTransactionCandidate } from '@/adapters/clipboardAdapter';
 import { parseOcrExtractedText } from '@/adapters/ocrAdapter';
 import {
@@ -57,7 +60,7 @@ import {
 } from '@/lib/trackAccent';
 import { useAuthStore } from '@/stores/authStore';
 import { useTrackScopeStore } from '@/stores/trackScopeStore';
-import { useRequireAuth, AUTH_REASONS } from '@/lib/requireAuth';
+import { useRequireAuth } from '@/lib/requireAuth';
 import { useCards } from '@/hooks/useCards';
 import { useTrackSnapshot } from '@/hooks/useTrackData';
 import {
@@ -69,11 +72,46 @@ import {
   useLinkTransaction,
   usePendingTransactions,
 } from '@/hooks/useTransactions';
-import { spacing, motion } from '@/theme';
+import { spacing } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useClipboardProcessedStore } from '@/stores/clipboardProcessedStore';
 import type { CardColorTheme } from '@/types/card';
 import * as Clipboard from 'expo-clipboard';
+
+type TrackSegment = 'checklist' | 'calendar' | 'protection';
+
+const SEGMENTS: { id: TrackSegment; label: string; icon: 'list-outline' | 'calendar-outline' | 'shield-checkmark-outline' }[] = [
+  { id: 'checklist', label: 'Checklist', icon: 'list-outline' },
+  { id: 'calendar', label: 'Calendar', icon: 'calendar-outline' },
+  { id: 'protection', label: 'Protection', icon: 'shield-checkmark-outline' },
+];
+
+function SegmentBody({
+  segment,
+  children,
+}: {
+  segment: TrackSegment;
+  children: React.ReactNode;
+}) {
+  const reduced = useReducedMotion();
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = 0;
+    progress.value = reduced
+      ? 1
+      : withTiming(1, { duration: 280, easing: Easing.out(Easing.cubic) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [segment, reduced]);
+
+  const style = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [{ translateY: (1 - progress.value) * (reduced ? 0 : 10) }],
+  }));
+
+  return <Animated.View style={style}>{children}</Animated.View>;
+}
 
 export default function TrackScreen() {
   const palette = usePalette();
@@ -99,6 +137,7 @@ export default function TrackScreen() {
   const markClipboardProcessed = useClipboardProcessedStore((s) => s.markProcessed);
   const isClipboardProcessed = useClipboardProcessedStore((s) => s.isAlreadyProcessed);
 
+  const [segment, setSegment] = useState<TrackSegment>('checklist');
   const [clipboardHint, setClipboardHint] = useState<string | null>(null);
   const [ocrText, setOcrText] = useState('');
   const [showOcr, setShowOcr] = useState(false);
@@ -106,11 +145,9 @@ export default function TrackScreen() {
   const [confirmItems, setConfirmItems] = useState<ConfirmFlowItem[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [attentionOpen, setAttentionOpen] = useState(false);
-  const [scopeSheetOpen, setScopeSheetOpen] = useState(false);
   const openedPendingIds = useRef<Set<string>>(new Set());
   const clipboardBatchRaw = useRef<string | null>(null);
 
-  // Drop stale selection if the card was deleted.
   useEffect(() => {
     if (!selectedCardId) return;
     if (!cards.some((c) => c.id === selectedCardId)) {
@@ -142,12 +179,6 @@ export default function TrackScreen() {
     [snapshot, selectedCardId],
   );
 
-  const scopeLabel = selectedCard?.nickname ?? 'All cards';
-  const scopeSwatch = selectedCard
-    ? accentPairFromThemeId(selectedCard.cardColorTheme).accent
-    : null;
-  const singleCard = Boolean(selectedCardId);
-
   const scrollY = useSharedValue(0);
   const viewportH = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((e) => {
@@ -165,10 +196,6 @@ export default function TrackScreen() {
     [cards],
   );
 
-  /**
-   * Attach "possible duplicate" refs and out-of-sync flags before showing the
-   * sheet so the user sees both before confirming.
-   */
   const withDuplicateFlags = useCallback(
     async (items: ConfirmFlowItem[]): Promise<ConfirmFlowItem[]> => {
       if (!userId || items.length === 0) return items;
@@ -194,7 +221,6 @@ export default function TrackScreen() {
         });
         if (Object.keys(dups).length === 0) return withSync;
         return withSync.map((i) =>
-          // A pending row IS this draft — don't flag it against itself.
           dups[i.key] && dups[i.key].id !== i.vaultId
             ? { ...i, duplicateOf: dups[i.key] }
             : i,
@@ -215,9 +241,7 @@ export default function TrackScreen() {
     initClipboardHash();
   }, [initClipboardHash]);
 
-  /** Open shared confirm sheet for persisted pending rows (e.g. Gmail). */
   useEffect(() => {
-    // Never interrupt an active clipboard/OCR confirm session.
     if (sheetOpen || parsingState || pending.length === 0) return;
     const fresh = pending.filter((p) => !openedPendingIds.current.has(p.id));
     if (fresh.length === 0) return;
@@ -283,13 +307,7 @@ export default function TrackScreen() {
   };
 
   const importClipboard = async () => {
-    if (
-      !requireAuth({
-        message: 'Sign in to import transactions',
-      })
-    ) {
-      return;
-    }
+    if (!requireAuth({ message: 'Sign in to import transactions' })) return;
     if (!userId) return;
     try {
       const rawPeek = (await Clipboard.getStringAsync())?.trim() ?? '';
@@ -300,7 +318,7 @@ export default function TrackScreen() {
         return;
       }
     } catch {
-      /* continue to full read */
+      /* continue */
     }
 
     setParsingState('reading');
@@ -336,13 +354,7 @@ export default function TrackScreen() {
   };
 
   const importOcrText = async () => {
-    if (
-      !requireAuth({
-        message: 'Sign in to import transactions',
-      })
-    ) {
-      return;
-    }
+    if (!requireAuth({ message: 'Sign in to import transactions' })) return;
     if (!userId || !ocrText.trim()) return;
     setParsingState('reading');
     try {
@@ -422,7 +434,6 @@ export default function TrackScreen() {
       linkStatus: link.linkStatus,
       cardHint: link.cardHint,
     });
-    // Dedupe may return an already-confirmed row — skip re-confirm.
     if (vault.status === 'confirmed') return;
     openedPendingIds.current.add(vault.id);
     await confirm.mutateAsync({
@@ -442,77 +453,53 @@ export default function TrackScreen() {
     }
   };
 
+  const milestones = scopedSnapshot?.milestones ?? [];
+  const pointsExpiring = scopedSnapshot?.pointsExpiring ?? [];
+
   return (
     <TrackThemeProvider pair={accentPair}>
-    <View style={styles.root}>
-      <GlowBackground
-        accentColor={accentPair.accent}
-        accentDeep={accentPair.accentDeep}
-      />
-      <ParsingStatusPill state={parsingState} />
-      <View style={styles.noticeSlot}>
-        <MilestoneResetNoticeBanner />
-      </View>
-      <Animated.ScrollView
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        onLayout={(e) => {
-          viewportH.value = e.nativeEvent.layout.height;
-        }}
-        contentContainerStyle={[
-          styles.content,
-          {
-            paddingTop: insets.top + spacing.md,
-            paddingBottom: insets.bottom + 130,
-          },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        <ScrollRevealProvider scrollY={scrollY} viewportH={viewportH}>
-          <AnimatedEntrance>
-            <Eyebrow color={accentPair.accent}>Track</Eyebrow>
-            <AppText variant="h1">Spend & rewards</AppText>
-            <AppText variant="small" color={palette.textSecondary}>
-              {singleCard
-                ? `Scoped to ${scopeLabel} — full-width cards for this wallet.`
-                : 'Overview across all cards — swipe within each category.'}
-            </AppText>
-          </AnimatedEntrance>
+      <View style={styles.root}>
+        <GlowBackground
+          accentColor={accentPair.accent}
+          accentDeep={accentPair.accentDeep}
+        />
+        <ParsingStatusPill state={parsingState} />
+        <View style={styles.noticeSlot}>
+          <MilestoneResetNoticeBanner />
+        </View>
+        <Animated.ScrollView
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          onLayout={(e) => {
+            viewportH.value = e.nativeEvent.layout.height;
+          }}
+          contentContainerStyle={[
+            styles.content,
+            {
+              paddingTop: insets.top + spacing.md,
+              paddingBottom: insets.bottom + 110,
+            },
+          ]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <ScrollRevealProvider scrollY={scrollY} viewportH={viewportH}>
+            <AnimatedEntrance>
+              <Eyebrow color={palette.indigo}>Benefits & tracking</Eyebrow>
+              <AppText variant="h1" style={styles.screenTitle}>
+                Track
+              </AppText>
+            </AnimatedEntrance>
 
-          <AnimatedEntrance delay={motion.staggerStep}>
-            <View style={styles.ingestRow}>
-              <PillButton
-                label="Import clipboard"
-                size="sm"
-                icon="clipboard-outline"
-                variant="ghost"
-                onPress={importClipboard}
-                loading={ingest.isPending && parsingState === 'reading'}
+            <AnimatedEntrance delay={40}>
+              <SegmentedControl
+                options={SEGMENTS}
+                value={segment}
+                onChange={setSegment}
               />
-              <PillButton
-                label="From screenshot"
-                size="sm"
-                icon="image-outline"
-                variant="ghost"
-                onPress={() => setShowOcr((v) => !v)}
-              />
-              <PillButton
-                label="Gmail"
-                size="sm"
-                icon="mail-outline"
-                variant="ghost"
-                onPress={() =>
-                  requireAuth({
-                    message: AUTH_REASONS.trackGmail,
-                    then: () => router.push('/track/gmail' as Href),
-                  })
-                }
-              />
-            </View>
-          </AnimatedEntrance>
+            </AnimatedEntrance>
 
-          {attention.length > 0 ? (
-            <AnimatedEntrance delay={motion.staggerStep}>
+            {attention.length > 0 ? (
               <GlassCard style={styles.hint} padding={spacing.md}>
                 <View style={[styles.attentionBadge, { backgroundColor: palette.amber }]}>
                   <AppText variant="caption" color={palette.textOnAccent}>
@@ -533,11 +520,9 @@ export default function TrackScreen() {
                   </AppText>
                 </Pressable>
               </GlassCard>
-            </AnimatedEntrance>
-          ) : null}
+            ) : null}
 
-          {clipboardHint ? (
-            <AnimatedEntrance delay={motion.staggerStep}>
+            {clipboardHint && segment === 'checklist' ? (
               <GlassCard style={styles.hint} padding={spacing.md}>
                 <AppText variant="small" style={styles.hintMessage} numberOfLines={3}>
                   {clipboardHint}
@@ -548,16 +533,14 @@ export default function TrackScreen() {
                   </AppText>
                 </Pressable>
               </GlassCard>
-            </AnimatedEntrance>
-          ) : null}
+            ) : null}
 
-          {showOcr ? (
-            <AnimatedEntrance>
+            {showOcr && segment === 'checklist' ? (
               <GlassCard style={styles.ocrBox} padding={spacing.lg}>
-                <AppText variant="title">Screenshot text</AppText>
+                <AppText variant="title">Paste alert text</AppText>
                 <AppText variant="caption" color={palette.textTertiary}>
-                  Paste the alert text from your screenshot. We’ll review it the same
-                  way as clipboard and Gmail imports.
+                  Paste a bank alert from your clipboard. Real screenshot capture
+                  isn’t available yet.
                 </AppText>
                 <FloatingLabelField
                   label="Alert text"
@@ -572,11 +555,9 @@ export default function TrackScreen() {
                   loading={parsingState === 'reading'}
                 />
               </GlassCard>
-            </AnimatedEntrance>
-          ) : null}
+            ) : null}
 
-          {pending.length > 0 && !sheetOpen ? (
-            <AnimatedEntrance delay={motion.staggerStep * 2}>
+            {pending.length > 0 && !sheetOpen ? (
               <GlassCard style={styles.hint} padding={spacing.md}>
                 <AppText variant="small" style={styles.hintMessage} numberOfLines={2}>
                   {pending.length} pending import{pending.length === 1 ? '' : 's'} to review
@@ -594,108 +575,92 @@ export default function TrackScreen() {
                   </AppText>
                 </Pressable>
               </GlassCard>
-            </AnimatedEntrance>
-          ) : null}
+            ) : null}
 
-          {isLoading ? (
-            <ActivityIndicator
-              color={accentPair.accent}
-              style={{ marginTop: spacing.xl }}
-            />
-          ) : (
-            <TrackDashboard
-              snapshot={scopedSnapshot}
-              hasCards={cards.length > 0}
-              singleCard={singleCard}
-              selectedCardId={selectedCardId}
-              accent={accentPair}
-              themeByCardId={themeByCardId}
-            />
-          )}
+            {isLoading && segment === 'checklist' ? (
+              <ActivityIndicator
+                color={accentPair.accent}
+                style={{ marginTop: spacing.xl }}
+              />
+            ) : (
+              <SegmentBody segment={segment} key={segment}>
+                {segment === 'checklist' ? (
+                  <TrackChecklistPanel
+                    cards={
+                      selectedCardId
+                        ? cards.filter((c) => c.id === selectedCardId)
+                        : cards
+                    }
+                    preferredStatementCardId={selectedCardId}
+                    milestones={milestones}
+                    pointsExpiring={pointsExpiring}
+                    themeByCardId={themeByCardId}
+                    onImportClipboard={importClipboard}
+                    onImportScreenshot={() => setShowOcr((v) => !v)}
+                    onAddCard={() => {
+                      if (!requireAuth({ message: 'Sign in to add a card' })) return;
+                      router.push('/card/new' as Href);
+                    }}
+                    showOcr={showOcr}
+                    delayBase={40}
+                  />
+                ) : null}
+                {segment === 'calendar' ? (
+                  <TrackCalendarPanel delayBase={40} />
+                ) : null}
+                {segment === 'protection' ? (
+                  <TrackProtectionPanel delayBase={40} />
+                ) : null}
+              </SegmentBody>
+            )}
+          </ScrollRevealProvider>
+        </Animated.ScrollView>
 
-          {!snapshot?.gmailConnected && cards.length > 0 ? (
-            <AnimatedEntrance delay={motion.staggerStep * 3}>
-              <Pressable
-                style={styles.gmailCta}
-                onPress={() =>
-                  requireAuth({
-                    message: AUTH_REASONS.trackGmail,
-                    then: () => router.push('/track/gmail' as Href),
-                  })
-                }
-              >
-                <Ionicons name="mail-outline" size={20} color={accentPair.accent} />
-                <AppText variant="small" color={accentPair.accent}>
-                  Optional: connect Gmail (read-only) for bank alerts
-                </AppText>
-              </Pressable>
-            </AnimatedEntrance>
-          ) : null}
-        </ScrollRevealProvider>
-      </Animated.ScrollView>
-
-      {cards.length > 0 ? (
-        <TrackCardScopeFab
-          bottom={insets.bottom + 88}
-          label={scopeLabel}
-          swatchColor={scopeSwatch}
-          onPress={() => setScopeSheetOpen(true)}
+        <ConfirmTransactionsSheet
+          visible={sheetOpen}
+          items={confirmItems}
+          cards={cards}
+          loading={ingest.isPending || confirm.isPending || dismiss.isPending}
+          onClose={() => {
+            setSheetOpen(false);
+            setConfirmItems([]);
+          }}
+          onBatchStart={async (items) => {
+            const raw = clipboardBatchRaw.current ?? items[0]?.rawText;
+            if (raw && items.some((i) => i.source === 'clipboard')) {
+              await markClipboardProcessed(raw);
+            }
+          }}
+          onConfirm={handleConfirmItem}
+          onDismiss={handleDismissItem}
+          onComplete={() => {
+            setClipboardHint(null);
+            refetch();
+          }}
         />
-      ) : null}
 
-      <TrackCardScopeSheet
-        visible={scopeSheetOpen}
-        onClose={() => setScopeSheetOpen(false)}
-        cards={cards}
-        selectedCardId={selectedCardId}
-        onSelect={setSelectedCardId}
-      />
-
-      <ConfirmTransactionsSheet
-        visible={sheetOpen}
-        items={confirmItems}
-        cards={cards}
-        loading={ingest.isPending || confirm.isPending || dismiss.isPending}
-        onClose={() => {
-          setSheetOpen(false);
-          setConfirmItems([]);
-        }}
-        onBatchStart={async (items) => {
-          const raw = clipboardBatchRaw.current ?? items[0]?.rawText;
-          if (raw && items.some((i) => i.source === 'clipboard')) {
-            await markClipboardProcessed(raw);
-          }
-        }}
-        onConfirm={handleConfirmItem}
-        onDismiss={handleDismissItem}
-        onComplete={() => {
-          setClipboardHint(null);
-          refetch();
-        }}
-      />
-
-      <AttentionTransactionsSheet
-        visible={attentionOpen}
-        items={attention}
-        cards={cards}
-        loading={linkTxn.isPending}
-        onClose={() => setAttentionOpen(false)}
-        onAssign={async (txnId, cardId) => {
-          await linkTxn.mutateAsync({
-            id: txnId,
-            cardId,
-            linkStatus: 'linked',
-          });
-        }}
-        onMarkUnmatched={async (txnId) => {
-          await linkTxn.mutateAsync({
-            id: txnId,
-            cardId: null,
-            linkStatus: 'unmatched',
-          });
-        }}
-      />
-    </View>
+        <AttentionTransactionsSheet
+          visible={attentionOpen}
+          items={attention}
+          cards={cards}
+          loading={linkTxn.isPending}
+          onClose={() => setAttentionOpen(false)}
+          onAssign={async (txnId, cardId) => {
+            await linkTxn.mutateAsync({
+              id: txnId,
+              cardId,
+              linkStatus: 'linked',
+            });
+          }}
+          onMarkUnmatched={async (txnId) => {
+            await linkTxn.mutateAsync({
+              id: txnId,
+              cardId: null,
+              linkStatus: 'unmatched',
+            });
+          }}
+        />
+      </View>
     </TrackThemeProvider>
   );
 }
@@ -707,11 +672,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     gap: spacing.lg,
   },
-  ingestRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
+  screenTitle: { marginTop: 2 },
   hint: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -737,11 +698,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   ocrBox: { gap: spacing.md },
-  gmailCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
-    flexWrap: 'wrap',
-  },
 });

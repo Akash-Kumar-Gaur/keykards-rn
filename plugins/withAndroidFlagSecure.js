@@ -8,9 +8,14 @@
  * iOS has no equivalent public API to block screenshots; that path is handled
  * at runtime via a screenshot listener + a background blur overlay (see
  * components/security).
+ *
+ * TEMP: set ENABLED to true before shipping. Requires a native rebuild to take effect.
  */
 
 const { withMainActivity } = require('@expo/config-plugins');
+
+/** Flip to true before release. */
+const ENABLED = false;
 
 const IMPORT_LINE = 'import android.view.WindowManager';
 const FLAG_SECURE_SNIPPET =
@@ -39,6 +44,8 @@ function addFlagSecureKotlin(src) {
 }
 
 module.exports = function withAndroidFlagSecure(config) {
+  if (!ENABLED) return config;
+
   return withMainActivity(config, (cfg) => {
     if (cfg.modResults.language === 'kt') {
       cfg.modResults.contents = addFlagSecureKotlin(cfg.modResults.contents);

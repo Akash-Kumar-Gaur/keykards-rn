@@ -1,10 +1,9 @@
 /**
- * Regression guard for the sync-badge / network-mark overlap.
+ * Regression guard for sync-status / network-mark overlap.
  *
- * The original bug: both were absolutely positioned top-right on the compact
- * card preview. These tests assert that every badge zone is disjoint in ALL
- * THREE density tiers (their layouts differ, so tier 1 passing proves nothing
- * about tiers 2 and 3) across the range of realistic phone widths.
+ * Original bug: both badges absolute-positioned top-right on a compact preview.
+ * These tests assert zones stay disjoint for CardFace (spotlight) and the
+ * Vault list row layout across realistic phone widths.
  */
 
 import {
@@ -13,12 +12,17 @@ import {
   rectsOverlap,
   NETWORK_BADGE_SIZE,
   REVEAL_AFFORDANCE_GUTTER,
+  vaultListPreviewHeight,
+  type CardPreviewLayout,
 } from './badgeZones';
-import { vaultCardHeight, type VaultDensity } from './vaultDensity';
 
-/** Narrow → large phones, minus the Vault list's horizontal padding. */
 const WIDTHS = [320, 360, 390, 414, 430].map((w) => w - 40);
-const TIERS: VaultDensity[] = ['spotlight', 'compact', 'dense'];
+const LAYOUTS: CardPreviewLayout[] = ['spotlight', 'list'];
+
+function heightFor(layout: CardPreviewLayout, width: number): number {
+  if (layout === 'list') return vaultListPreviewHeight();
+  return Math.round(width / 1.586);
+}
 
 describe('rectsOverlap', () => {
   it('detects the original bug: two badges both pinned top-right', () => {
@@ -35,25 +39,20 @@ describe('rectsOverlap', () => {
 });
 
 describe('badge zones never overlap', () => {
-  TIERS.forEach((density) => {
-    it(`keeps every zone disjoint in the ${density} tier`, () => {
+  LAYOUTS.forEach((layout) => {
+    it(`keeps every zone disjoint in the ${layout} layout`, () => {
       WIDTHS.forEach((width) => {
-        const height = vaultCardHeight(density, width);
         const clashes = overlappingZonePairs(
-          cardPreviewZones(density, width, height),
+          cardPreviewZones(layout, width, heightFor(layout, width)),
         );
         expect(clashes).toEqual([]);
       });
     });
 
-    it(`keeps the sync status zone clear of the network mark in ${density}`, () => {
+    it(`keeps sync status clear of the network mark in ${layout}`, () => {
       WIDTHS.forEach((width) => {
-        const height = vaultCardHeight(density, width);
-        const zones = cardPreviewZones(density, width, height);
-        // Spotlight puts the network mark in the bottom-right corner; the other
-        // tiers expose it as NETWORK. Sync status is STATUS (card tiers) or the
-        // trailing dot (dense rows).
-        const status = zones.STATUS ?? zones.TRAILING_STATUS;
+        const zones = cardPreviewZones(layout, width, heightFor(layout, width));
+        const status = zones.STATUS;
         const network = zones.NETWORK ?? zones.BOTTOM_RIGHT;
         expect(status).toBeDefined();
         expect(network).toBeDefined();
@@ -64,7 +63,7 @@ describe('badge zones never overlap', () => {
 
   it('keeps the card-detail reveal pill clear of both bottom corners', () => {
     WIDTHS.forEach((width) => {
-      const height = vaultCardHeight('spotlight', width);
+      const height = heightFor('spotlight', width);
       const zones = cardPreviewZones('spotlight', width, height, true);
       expect(zones.BOTTOM_CENTER).toBeDefined();
       expect(rectsOverlap(zones.BOTTOM_CENTER!, zones.BOTTOM_LEFT!)).toBe(false);
@@ -77,18 +76,11 @@ describe('badge zones never overlap', () => {
   });
 });
 
-describe('tier layouts stay legible at the narrowest width', () => {
+describe('list layout stays legible at the narrowest width', () => {
   const narrow = Math.min(...WIDTHS);
 
-  it('leaves a positive-width text column in compact and dense tiers', () => {
-    (['compact', 'dense'] as VaultDensity[]).forEach((density) => {
-      const zones = cardPreviewZones(
-        density,
-        narrow,
-        vaultCardHeight(density, narrow),
-      );
-      const text = zones.TOP_LEFT ?? zones.TEXT;
-      expect(text!.w).toBeGreaterThan(80);
-    });
+  it('leaves a positive-width text column', () => {
+    const zones = cardPreviewZones('list', narrow, vaultListPreviewHeight());
+    expect(zones.TOP_LEFT!.w).toBeGreaterThan(80);
   });
 });

@@ -1,9 +1,6 @@
 /**
- * FloatingTabBar — floating pill with icon + persistent label per tab.
- *
- * Sliding indicator fills each tab’s measured slot (x/width/height from
- * onLayout). Height is never a leftover icon-only constant — it tracks the
- * slot that already wraps icon + label + padding.
+ * FloatingTabBar — icon-only dock with a small sliding dot under the active tab.
+ * No persistent text labels (a11y via accessibilityLabel).
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -29,7 +26,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { fontFamily, radius, spacing, motion } from '@/theme';
+import { fontFamily, radius, spacing } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useAuthStore } from '@/stores/authStore';
@@ -67,8 +64,7 @@ const ICONS: Record<
 
 const TAB_ORDER = ['index', 'vault', 'track', 'assistant', 'profile'] as const;
 
-/** Short nav labels — match in-app section names (Assist = AI Assistant tab). */
-const TAB_LABELS: Record<(typeof TAB_ORDER)[number], string> = {
+const TAB_A11Y: Record<(typeof TAB_ORDER)[number], string> = {
   index: 'Home',
   vault: 'Vault',
   track: 'Track',
@@ -76,31 +72,25 @@ const TAB_LABELS: Record<(typeof TAB_ORDER)[number], string> = {
   profile: 'Profile',
 };
 
-const BAR_WIDTH_RATIO = 0.9;
-/** Outer chrome padding around the row of tab slots. */
-const BAR_PAD_H = 4;
-const BAR_PAD_V = 4;
-/**
- * Gap between the slot edge and the sliding pill. Keep small so the pill
- * reads as a full segment fill, not a floating chip.
- */
-const INDICATOR_INSET = 2;
-/** Padding inside each tab so icon+label never touch the pill edge. */
-const TAB_PAD_V = 6;
-const TAB_PAD_H = 4;
-/** Icon + label + gaps + tab padding — floor for every slot. */
-const SLOT_MIN_HEIGHT = 52;
+const BAR_WIDTH_RATIO = 0.72;
+const BAR_PAD = 6;
+const SLOT_SIZE = 48;
+const ICON_SIZE = 22;
+const DOT_SIZE = 5;
+/** Vertical offset from slot center to place the dot under the icon. */
+const DOT_Y_FROM_CENTER = 14;
 
 type TabLayout = { x: number; y: number; width: number; height: number };
 
-const SPRING = { damping: 16, stiffness: 180, mass: 0.85 };
+const SPRING = { damping: 18, stiffness: 220, mass: 0.7 };
+const PRESS_SPRING = { damping: 14, stiffness: 320, mass: 0.55 };
 
 function TabItem({
   index,
   iconActive,
   iconInactive,
   onPress,
-  label,
+  a11yLabel,
   activeIndex,
   reduced,
   badgeCount,
@@ -109,28 +99,41 @@ function TabItem({
   iconActive: keyof typeof Ionicons.glyphMap;
   iconInactive: keyof typeof Ionicons.glyphMap;
   onPress: () => void;
-  label: string;
+  a11yLabel: string;
   activeIndex: SharedValue<number>;
   reduced: boolean;
   badgeCount?: number;
 }) {
   const palette = usePalette();
-  const bump = useSharedValue(1);
+  const press = useSharedValue(1);
 
-  const playBump = useCallback(() => {
-    if (reduced) {
-      bump.value = withTiming(1, { duration: 100 });
-      return;
-    }
-    bump.value = withSequence(
-      withSpring(1.06, { damping: 12, stiffness: 280 }),
-      withSpring(1, motion.springConfig),
-    );
-  }, [bump, reduced]);
+  const onPressIn = useCallback(() => {
+    press.value = reduced
+      ? withTiming(0.92, { duration: 80 })
+      : withSpring(0.88, PRESS_SPRING);
+  }, [press, reduced]);
 
-  const bumpStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: bump.value }],
+  const onPressOut = useCallback(() => {
+    press.value = reduced
+      ? withTiming(1, { duration: 120 })
+      : withSequence(withSpring(1.08, PRESS_SPRING), withSpring(1, SPRING));
+  }, [press, reduced]);
+
+  const pressStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: press.value }],
   }));
+
+  const iconStyle = useAnimatedStyle(() => {
+    const focus = interpolate(
+      activeIndex.value,
+      [index - 1, index, index + 1],
+      [0, 1, 0],
+      Extrapolation.CLAMP,
+    );
+    return {
+      transform: [{ scale: 0.92 + focus * 0.1 }],
+    };
+  });
 
   const activeStyle = useAnimatedStyle(() => {
     const focus = interpolate(
@@ -154,73 +157,39 @@ function TabItem({
 
   return (
     <Pressable
-      onPress={() => {
-        playBump();
-        onPress();
-      }}
+      onPress={onPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       style={styles.item}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      hitSlop={4}
+      accessibilityRole="tab"
+      accessibilityLabel={a11yLabel}
+      hitSlop={6}
     >
-      <Animated.View style={[styles.itemInner, bumpStyle]}>
-        <View style={styles.iconWrap}>
+      <Animated.View style={[styles.itemInner, pressStyle]}>
+        <Animated.View style={[styles.iconWrap, iconStyle]}>
           <Animated.View style={[styles.iconLayer, inactiveStyle]}>
-            <Ionicons name={iconInactive} size={20} color={palette.textTertiary} />
+            <Ionicons name={iconInactive} size={ICON_SIZE} color={palette.textTertiary} />
           </Animated.View>
           <Animated.View style={[styles.iconLayer, activeStyle]}>
-            <Ionicons name={iconActive} size={20} color={palette.textOnAccent} />
+            <Ionicons name={iconActive} size={ICON_SIZE} color={palette.indigo} />
           </Animated.View>
           {badgeCount && badgeCount > 0 ? (
             <View style={[styles.badge, { backgroundColor: palette.amber }]}>
-              <Animated.Text
-                style={[styles.badgeText, { color: palette.textOnAccent }]}
-              >
+              <Animated.Text style={[styles.badgeText, { color: palette.textOnAccent }]}>
                 {badgeCount > 9 ? '9+' : String(badgeCount)}
               </Animated.Text>
             </View>
           ) : null}
-        </View>
-
-        <View style={styles.labelWrap}>
-          <Animated.Text
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.8}
-            style={[
-              styles.label,
-              { color: palette.textTertiary },
-              inactiveStyle,
-            ]}
-          >
-            {label}
-          </Animated.Text>
-          <Animated.Text
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.8}
-            style={[
-              styles.label,
-              styles.labelActiveLayer,
-              { color: palette.textOnAccent },
-              activeStyle,
-            ]}
-          >
-            {label}
-          </Animated.Text>
-        </View>
+        </Animated.View>
       </Animated.View>
     </Pressable>
   );
 }
 
-function indicatorFrame(layout: TabLayout) {
+function dotFrame(layout: TabLayout) {
   return {
-    x: layout.x + INDICATOR_INSET,
-    y: layout.y + INDICATOR_INSET,
-    w: Math.max(0, layout.width - INDICATOR_INSET * 2),
-    // Full measured slot height — not an icon-only constant.
-    h: Math.max(0, layout.height - INDICATOR_INSET * 2),
+    x: layout.x + layout.width / 2 - DOT_SIZE / 2,
+    y: layout.y + layout.height / 2 + DOT_Y_FROM_CENTER,
   };
 }
 
@@ -229,7 +198,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBa
   const insets = useSafeAreaInsets();
   const reduced = useReducedMotion();
   const { width: screenWidth } = useWindowDimensions();
-  const barWidth = screenWidth * BAR_WIDTH_RATIO;
+  const barWidth = Math.min(screenWidth * BAR_WIDTH_RATIO, 340);
   const userId = useAuthStore((s) => s.user?.id);
   const { data: attention = [] } = useAttentionTransactions(userId);
   const trackBadge = attention.length;
@@ -238,9 +207,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBa
   const [layoutsReady, setLayoutsReady] = useState(false);
 
   const indicatorX = useSharedValue(0);
-  const indicatorY = useSharedValue(INDICATOR_INSET);
-  const indicatorW = useSharedValue(48);
-  const indicatorH = useSharedValue(SLOT_MIN_HEIGHT - INDICATOR_INSET * 2);
+  const indicatorY = useSharedValue(0);
   const activeIndex = useSharedValue(state.index);
   const indicatorOpacity = useSharedValue(0);
 
@@ -248,35 +215,22 @@ export function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBa
     (index: number, animate: boolean) => {
       const layout = layouts.current[index];
       if (!layout) return;
-      const { x, y, w, h } = indicatorFrame(layout);
+      const { x, y } = dotFrame(layout);
 
       if (reduced || !animate) {
         indicatorX.value = x;
         indicatorY.value = y;
-        indicatorW.value = w;
-        indicatorH.value = h;
         activeIndex.value = index;
         indicatorOpacity.value = withTiming(1, { duration: reduced ? 160 : 0 });
         return;
       }
-      // X/W/H/Y all spring together so the pill never clips mid-slide when
-      // neighboring slots differ slightly in measured height.
+
       indicatorX.value = withSpring(x, SPRING);
       indicatorY.value = withSpring(y, SPRING);
-      indicatorW.value = withSpring(w, SPRING);
-      indicatorH.value = withSpring(h, SPRING);
       activeIndex.value = withSpring(index, SPRING);
-      indicatorOpacity.value = withTiming(1, { duration: 160 });
+      indicatorOpacity.value = withTiming(1, { duration: 140 });
     },
-    [
-      activeIndex,
-      indicatorH,
-      indicatorOpacity,
-      indicatorW,
-      indicatorX,
-      indicatorY,
-      reduced,
-    ],
+    [activeIndex, indicatorOpacity, indicatorX, indicatorY, reduced],
   );
 
   useEffect(() => {
@@ -300,11 +254,9 @@ export function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBa
       if (!layoutsReady) {
         const layout = layouts.current[target];
         if (layout) {
-          const frame = indicatorFrame(layout);
+          const frame = dotFrame(layout);
           indicatorX.value = frame.x;
           indicatorY.value = frame.y;
-          indicatorW.value = frame.w;
-          indicatorH.value = frame.h;
           activeIndex.value = target;
           indicatorOpacity.value = 1;
         }
@@ -317,8 +269,6 @@ export function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBa
 
   const indicatorStyle = useAnimatedStyle(() => ({
     opacity: indicatorOpacity.value,
-    width: indicatorW.value,
-    height: indicatorH.value,
     transform: [
       { translateX: indicatorX.value },
       { translateY: indicatorY.value },
@@ -331,7 +281,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBa
       pointerEvents="box-none"
     >
       <BlurView
-        intensity={30}
+        intensity={42}
         tint={palette.blurTint}
         style={[
           styles.bar,
@@ -345,8 +295,8 @@ export function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBa
         <Animated.View
           style={[
             styles.indicator,
-            indicatorStyle,
             { backgroundColor: palette.indigo },
+            indicatorStyle,
           ]}
           pointerEvents="none"
         />
@@ -361,8 +311,8 @@ export function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBa
             const layoutIndex = TAB_ORDER.indexOf(
               route.name as (typeof TAB_ORDER)[number],
             );
-            const label =
-              TAB_LABELS[route.name as (typeof TAB_ORDER)[number]] ??
+            const a11yLabel =
+              TAB_A11Y[route.name as (typeof TAB_ORDER)[number]] ??
               (typeof descriptors[route.key]?.options.tabBarLabel === 'string'
                 ? (descriptors[route.key].options.tabBarLabel as string)
                 : descriptors[route.key]?.options.title ?? route.name);
@@ -392,7 +342,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: FloatingTabBa
                   iconActive={icons.active}
                   iconInactive={icons.inactive}
                   onPress={onPress}
-                  label={label}
+                  a11yLabel={a11yLabel}
                   activeIndex={activeIndex}
                   reduced={reduced}
                   badgeCount={route.name === 'track' ? trackBadge : undefined}
@@ -414,55 +364,55 @@ const styles = StyleSheet.create({
   },
   bar: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: BAR_PAD_H,
-    paddingVertical: BAR_PAD_V,
+    padding: BAR_PAD,
     borderRadius: radius.pill,
     borderWidth: StyleSheet.hairlineWidth * 2,
     overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOpacity: 0.25,
-        shadowRadius: 20,
-        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.32,
+        shadowRadius: 24,
+        shadowOffset: { width: 0, height: 12 },
       },
-      android: { elevation: 12 },
+      android: { elevation: 14 },
     }),
   },
   indicator: {
     position: 'absolute',
     left: 0,
     top: 0,
-    borderRadius: radius.lg,
+    width: DOT_SIZE,
+    height: DOT_SIZE,
+    borderRadius: DOT_SIZE / 2,
     zIndex: 0,
   },
   itemSlot: {
     flex: 1,
-    minHeight: SLOT_MIN_HEIGHT,
+    height: SLOT_SIZE,
     zIndex: 1,
   },
   item: {
     flex: 1,
     width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: SLOT_MIN_HEIGHT,
-    paddingVertical: TAB_PAD_V,
-    paddingHorizontal: TAB_PAD_H,
   },
   itemInner: {
     width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
   },
   iconWrap: {
     width: 28,
-    height: 22,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 6,
   },
   iconLayer: {
     position: 'absolute',
@@ -473,29 +423,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  labelWrap: {
-    height: 14,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    fontFamily: fontFamily.medium,
-    fontSize: 10,
-    lineHeight: 14,
-    letterSpacing: 0,
-    textAlign: 'center',
-    width: '100%',
-  },
-  labelActiveLayer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-  },
   badge: {
     position: 'absolute',
-    top: -2,
-    right: -6,
+    top: -3,
+    right: -7,
     minWidth: 15,
     height: 15,
     paddingHorizontal: 3,

@@ -9,7 +9,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, type Href } from 'expo-router';
-import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
+import { Carousel, type CarouselRef } from 'react-native-reanimated-carousel';
 import { Ionicons } from '@expo/vector-icons';
 import { GlowBackground } from '@/components/ui/GlowBackground';
 import { AppText, Eyebrow } from '@/components/ui/AppText';
@@ -73,7 +73,7 @@ export default function OnboardingScreen() {
   const reduced = useReducedMotion();
   const markSeen = useOnboardingStore((s) => s.markSeen);
   const { width, height } = useWindowDimensions();
-  const carouselRef = useRef<ICarouselInstance>(null);
+  const carouselRef = useRef<CarouselRef>(null);
   const [index, setIndex] = useState(0);
   const isLast = index === ONBOARDING_SLIDES.length - 1;
 
@@ -107,24 +107,14 @@ export default function OnboardingScreen() {
 
       <Carousel
         ref={carouselRef}
-        width={width}
-        height={height}
         data={ONBOARDING_SLIDES}
         loop={false}
-        pagingEnabled
-        snapEnabled
-        style={styles.carousel}
-        containerStyle={styles.carousel}
-        mode={reduced ? undefined : 'parallax'}
-        modeConfig={
-          reduced
-            ? undefined
-            : {
-                parallaxScrollingScale: 0.94,
-                parallaxScrollingOffset: 28,
-              }
-        }
-        scrollAnimationDuration={reduced ? 0 : 450}
+        itemSize={width}
+        snapMode="page"
+        style={[styles.carousel, { width, height }]}
+        contentContainerStyle={styles.carousel}
+        layout={reduced ? undefined : { type: 'parallax', scale: 0.94, offset: 28 }}
+        animation={{ type: 'timing', duration: reduced ? 0 : 450 }}
         onSnapToItem={setIndex}
         renderItem={({ item }) => (
           <Slide item={item} topPad={slideTopPad} bottomPad={slideBottomPad} />

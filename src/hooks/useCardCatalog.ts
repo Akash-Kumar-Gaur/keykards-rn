@@ -23,6 +23,7 @@ type CatalogRow = {
   default_annual_fee: number | string | null;
   card_color_theme: string;
   default_color_theme: string | null;
+  source: string | null;
 };
 
 function resolveTheme(...candidates: Array<string | null | undefined>): CardColorTheme {
@@ -51,10 +52,15 @@ function mapCatalog(row: CatalogRow): CardCatalogEntry {
         b.value_estimate === null || b.value_estimate === undefined
           ? null
           : Number(b.value_estimate),
+      period_raw: b.period_raw ?? null,
     })),
     defaultAnnualFee: Number.isFinite(fee as number) ? (fee as number) : null,
     cardColorTheme: theme,
     defaultColorTheme: theme,
+    source:
+      row.source === 'manual' || row.source === 'auto' || row.source === 'needs_review'
+        ? row.source
+        : undefined,
   };
 }
 
@@ -69,8 +75,10 @@ export function useCardCatalog() {
       const { data, error } = await supabase
         .from('card_catalog')
         .select(
-          'id, bank_name, card_name, network, default_benefits, default_annual_fee, card_color_theme, default_color_theme',
+          'id, bank_name, card_name, network, default_benefits, default_annual_fee, card_color_theme, default_color_theme, source',
         )
+        // needs_review stays on the internal review screen until confirmed
+        .neq('source', 'needs_review')
         .order('bank_name', { ascending: true })
         .order('card_name', { ascending: true });
       if (error) {

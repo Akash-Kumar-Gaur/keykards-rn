@@ -17,6 +17,7 @@
     "seed-known": "tsx src/cli.ts seed-known",
     "smoke:fetch": "tsx src/smoke-fetch.ts --limit 10",
     "serve": "tsx src/server.ts",
+    "test": "node --import tsx --test src/**/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

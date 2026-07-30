@@ -7,9 +7,17 @@ them with an LLM, and upserts into Supabase `card_catalog` (high confidence only
 
 1. **Fetch** — `SOURCES` URL list in `src/sources.ts` + static HTML strip;
    Playwright fallback when the page is thin or `preferPlaywright` is set.
-2. **LLM** — OpenAI or Anthropic extracts JSON `{ card_name, bank_name, annual_fee, benefits[], confidence }` (`LLM_PROVIDER=auto|openai|anthropic`).
-3. **Write** — `confidence: high` → upsert `card_catalog` with `source: 'auto'`
-   (never overwrites `source: 'manual'`). Medium/low / failures → `catalog_scrape_log` only.
+2. **LLM** — OpenAI or Anthropic extracts JSON
+   `{ card_name, bank_name, annual_fee, benefits[{…, value_estimate, period_raw}], confidence }`.
+   Prompt requires `value_estimate` to be **annual INR**; `period_raw` keeps the
+   source figure (e.g. `₹240/month`).
+3. **Normalize** — `annualizeBenefits.ts` post-processes monthly/quarterly figures
+   the model left un-annualized, then flags any single benefit whose annual
+   estimate is **>10× the card’s annual fee** as implausible.
+4. **Write** — `confidence: high` and value-sane → upsert with `source: 'auto'`;
+   implausible values → upsert with `source: 'needs_review'` (and scrape log
+   status `needs_review`). Never overwrites `source: 'manual'`.
+   Medium/low confidence → `catalog_scrape_log` only (no catalog write).
 
 ## Discovery crawl (monthly)
 

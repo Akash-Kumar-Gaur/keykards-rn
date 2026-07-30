@@ -1,5 +1,6 @@
 /**
  * CatalogPicker — typeahead over card_catalog (bank / card name).
+ * When no match: offer live web search before full manual entry.
  */
 
 import React, { useMemo, useState } from 'react';
@@ -15,13 +16,17 @@ import { FloatingLabelField } from '@/components/auth/FloatingLabelField';
 import { AppText } from '@/components/ui/AppText';
 import { NetworkBadge } from '@/components/vault/NetworkBadge';
 import { filterCatalog, useCardCatalog } from '@/hooks/useCardCatalog';
+import {
+  searchCardLive,
+  splitBankCardQuery,
+} from '@/lib/searchCardLive';
 import { radius, spacing } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
 import type { CardCatalogEntry } from '@/types/card';
 
 interface CatalogPickerProps {
   selected: CardCatalogEntry | null;
-  onSelect: (entry: CardCatalogEntry) => void;
+  onSelect: (entry: CardCatalogEntry, meta?: { fromLiveSearch?: boolean; message?: string }) => void;
   onClear: () => void;
   onManual: () => void;
   manualMode: boolean;
@@ -35,11 +40,51 @@ export function CatalogPicker({
   manualMode,
 }: CatalogPickerProps) {
   const palette = usePalette();
-  const { data = [], isLoading, isError } = useCardCatalog();
+  const { data = [], isLoading, isError, refetch } = useCardCatalog();
   const [query, setQuery] = useState('');
+  const [liveOpen, setLiveOpen] = useState(false);
+  const [liveBank, setLiveBank] = useState('');
+  const [liveCard, setLiveCard] = useState('');
+  const [liveBusy, setLiveBusy] = useState(false);
+  const [liveError, setLiveError] = useState<string | null>(null);
 
   const matches = useMemo(() => filterCatalog(data, query).slice(0, 12), [data, query]);
   const showList = !manualMode && !selected && query.trim().length > 0;
+
+  const openLiveSearch = () => {
+    const split = splitBankCardQuery(query);
+    setLiveBank(split.bankName);
+    setLiveCard(split.cardName);
+    setLiveError(null);
+    setLiveOpen(true);
+  };
+
+  const runLiveSearch = async () => {
+    if (!liveBank.trim() || !liveCard.trim()) {
+      setLiveError('Enter both bank name and card name.');
+      return;
+    }
+    setLiveBusy(true);
+    setLiveError(null);
+    try {
+      const result = await searchCardLive(liveBank, liveCard);
+      if (!result.ok) {
+        setLiveError(result.error);
+        return;
+      }
+      setLiveOpen(false);
+      setQuery('');
+      void refetch();
+      onSelect(result.entry, {
+        fromLiveSearch: true,
+        message: result.message,
+      });
+    } catch (e) {
+      setLiveError(e instanceof Error ? e.message : 'Live search failed');
+    } finally {
+      setLiveBusy(false);
+    }
+  };
 
   return (
     <View style={styles.wrap}>
@@ -108,11 +153,21 @@ export function CatalogPicker({
           {matches.length === 0 ? (
             <View style={styles.emptyMatch}>
               <AppText variant="small" color={palette.textSecondary}>
-                We don’t have this one yet — add details manually.
+                No catalog match yet.
               </AppText>
-              <Pressable onPress={onManual} style={styles.manualBtn}>
+              <Pressable
+                onPress={openLiveSearch}
+                style={styles.primaryAction}
+                accessibilityRole="button"
+              >
+                <Ionicons name="globe-outline" size={16} color={palette.indigo} />
                 <AppText variant="small" color={palette.indigo}>
-                  Enter manually
+                  Can’t find your card? Search for it
+                </AppText>
+              </Pressable>
+              <Pressable onPress={onManual} style={styles.manualBtn}>
+                <AppText variant="caption" color={palette.textTertiary}>
+                  Or enter manually (no benefits)
                 </AppText>
               </Pressable>
             </View>
@@ -144,12 +199,101 @@ export function CatalogPicker({
         </ScrollView>
       ) : null}
 
-      {!selected && !manualMode ? (
-        <Pressable onPress={onManual} style={styles.manualLink}>
-          <AppText variant="caption" color={palette.indigo}>
-            Can’t find it? Enter details manually
+      {liveOpen && !selected ? (
+        <View
+          style={[
+            styles.livePanel,
+            {
+              borderColor: palette.glassBorder,
+              backgroundColor: palette.navy900,
+            },
+          ]}
+        >
+          <AppText variant="small" style={{ color: palette.textPrimary }}>
+            Search the web for your card
           </AppText>
-        </Pressable>
+          <AppText variant="caption" color={palette.textTertiary}>
+            We’ll look up benefits and let you review them before saving.
+          </AppText>
+          <FloatingLabelField
+            label="Bank name"
+            icon="business-outline"
+            value={liveBank}
+            onChangeText={setLiveBank}
+            autoCapitalize="words"
+          />
+          <FloatingLabelField
+            label="Card name"
+            icon="card-outline"
+            value={liveCard}
+            onChangeText={setLiveCard}
+            autoCapitalize="words"
+          />
+          {liveError ? (
+            <AppText variant="small" color={palette.amber}>
+              {liveError}
+            </AppText>
+          ) : null}
+          <View style={styles.liveActions}>
+            <Pressable
+              onPress={() => {
+                setLiveOpen(false);
+                setLiveError(null);
+              }}
+              disabled={liveBusy}
+              style={styles.manualBtn}
+            >
+              <AppText variant="caption" color={palette.textTertiary}>
+                Cancel
+              </AppText>
+            </Pressable>
+            <Pressable
+              onPress={() => void runLiveSearch()}
+              disabled={liveBusy}
+              style={[
+                styles.searchBtn,
+                { backgroundColor: palette.indigo },
+                liveBusy ? { opacity: 0.7 } : null,
+              ]}
+            >
+              {liveBusy ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <AppText variant="small" style={{ color: '#fff' }}>
+                  Search
+                </AppText>
+              )}
+            </Pressable>
+          </View>
+          {liveError ? (
+            <Pressable
+              onPress={() => {
+                setLiveOpen(false);
+                onManual();
+              }}
+              style={styles.manualBtn}
+            >
+              <AppText variant="caption" color={palette.indigo}>
+                Enter details manually instead
+              </AppText>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+
+      {!selected && !manualMode && !liveOpen ? (
+        <View style={styles.footerLinks}>
+          <Pressable onPress={openLiveSearch} style={styles.manualLink}>
+            <AppText variant="caption" color={palette.indigo}>
+              Can’t find your card? Search for it
+            </AppText>
+          </Pressable>
+          <Pressable onPress={onManual} style={styles.manualLink}>
+            <AppText variant="caption" color={palette.textTertiary}>
+              Enter details manually
+            </AppText>
+          </Pressable>
+        </View>
       ) : null}
 
       {manualMode && !selected ? (
@@ -193,6 +337,32 @@ const styles = StyleSheet.create({
   },
   rowText: { flex: 1, gap: 2 },
   emptyMatch: { padding: spacing.lg, gap: spacing.sm },
+  primaryAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    alignSelf: 'flex-start',
+  },
   manualBtn: { alignSelf: 'flex-start' },
   manualLink: { paddingVertical: spacing.xs },
+  footerLinks: { gap: 2 },
+  livePanel: {
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  liveActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: spacing.md,
+  },
+  searchBtn: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    minWidth: 88,
+    alignItems: 'center',
+  },
 });

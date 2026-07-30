@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import {
   darkPalette,
@@ -22,6 +22,7 @@ import {
   type ThemeMode,
 } from '@/lib/themePreference';
 import { useThemePreferenceStore } from '@/stores/themePreferenceStore';
+import { SCREENSHOT_MODE } from '@/lib/screenshotMode';
 
 type AppGradients = ReturnType<typeof gradientsForMode>;
 
@@ -82,7 +83,10 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppThemeContext.Provider value={value}>
       <ThemeProvider value={visualTheme}>
-        <StatusBar style={isLight ? 'dark' : 'light'} />
+        <StatusBar
+          style={isLight ? 'dark' : 'light'}
+          hidden={SCREENSHOT_MODE && Platform.OS === 'android'}
+        />
         {children}
       </ThemeProvider>
     </AppThemeContext.Provider>

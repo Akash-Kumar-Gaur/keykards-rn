@@ -1,10 +1,8 @@
 /**
- * Vault tab — adaptive-density card list + empty state.
- * Density tier comes from the total card count (see lib/vaultDensity.ts).
- * Filters live behind a floating button (bottom sheet) so the list keeps the page.
+ * Vault tab — swipe-to-delete + long-press multi-select on the compact list.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -14,104 +12,27 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, type Href } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { GlowBackground } from '@/components/ui/GlowBackground';
 import { AppText, Eyebrow } from '@/components/ui/AppText';
 import { EmptyVault } from '@/components/vault/EmptyVault';
 import { VaultCardList } from '@/components/vault/VaultCardList';
-import { VaultFilterFab } from '@/components/vault/VaultFilterFab';
 import { VaultAddCardFab } from '@/components/vault/VaultAddCardFab';
-import {
-  VaultFiltersSheet,
-  type FeeFilter,
-  type SortKey,
-} from '@/components/vault/VaultFiltersSheet';
-import {
-  NetworkBadge,
-  networkAccessibilityLabel,
-} from '@/components/vault/NetworkBadge';
+import { VaultSelectionBar } from '@/components/vault/VaultSelectionBar';
 import { useAuthStore } from '@/stores/authStore';
-import { useCards } from '@/hooks/useCards';
+import { useCards, useDeleteCards } from '@/hooks/useCards';
 import { useRequireAuth, AUTH_REASONS } from '@/lib/requireAuth';
-import { vaultDensityForCount } from '@/lib/vaultDensity';
 import { vaultListMode } from '@/lib/vaultListMode';
+import { confirmDialog, showDialog } from '@/stores/dialogStore';
+import { logger } from '@/lib/logger';
 import { spacing } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
-import { CARD_NETWORKS, type CardNetwork, type VaultCard } from '@/types/card';
+import type { VaultCard } from '@/types/card';
 
-const NETWORK_CHIPS = [
-  { id: 'all', label: 'All', accessibilityLabel: 'All networks' },
-  ...CARD_NETWORKS.map((n) => ({
-    id: n,
-    label: n,
-    accessibilityLabel: networkAccessibilityLabel(n),
-    leading: () => (
-      <NetworkBadge network={n as CardNetwork} size="sm" bare />
-    ),
-    iconOnly: true,
-  })),
-];
-
-const FEE_CHIPS = [
-  { id: 'all', label: 'All fees' },
-  { id: 'due_soon', label: 'Fee due soon' },
-  { id: 'no_fee', label: 'No annual fee' },
-];
-
-const SORT_CHIPS = [
-  { id: 'recent', label: 'Recently added' },
-  { id: 'fee_due', label: 'Fee due date' },
-  { id: 'bank', label: 'Bank A–Z' },
-];
-
-function daysUntil(dateStr: string | null): number | null {
-  if (!dateStr) return null;
-  const d = new Date(`${dateStr}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.ceil((d.getTime() - today.getTime()) / 86_400_000);
-}
-
-function filterAndSort(
-  cards: VaultCard[],
-  network: string,
-  fee: FeeFilter,
-  bank: string,
-  sort: SortKey,
-): VaultCard[] {
-  let list = [...cards];
-
-  if (network !== 'all') {
-    list = list.filter((c) => c.network === network);
-  }
-  if (fee === 'no_fee') {
-    list = list.filter((c) => c.annualFee == null || c.annualFee === 0);
-  } else if (fee === 'due_soon') {
-    list = list.filter((c) => {
-      const days = daysUntil(c.feeDueDate);
-      return days != null && days >= 0 && days <= 30;
-    });
-  }
-  if (bank !== 'all') {
-    list = list.filter((c) => c.bankName === bank);
-  }
-
-  list.sort((a, b) => {
-    if (sort === 'bank') {
-      return a.bankName.localeCompare(b.bankName) || a.nickname.localeCompare(b.nickname);
-    }
-    if (sort === 'fee_due') {
-      const da = daysUntil(a.feeDueDate);
-      const db = daysUntil(b.feeDueDate);
-      if (da == null && db == null) return 0;
-      if (da == null) return 1;
-      if (db == null) return -1;
-      return da - db;
-    }
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
-
-  return list;
+function sortRecent(cards: VaultCard[]): VaultCard[] {
+  return [...cards].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 }
 
 export default function VaultScreen() {
@@ -120,6 +41,7 @@ export default function VaultScreen() {
   const router = useRouter();
   const userId = useAuthStore((s) => s.user?.id);
   const requireAuth = useRequireAuth();
+  const deleteCards = useDeleteCards(userId);
   const {
     data: cards,
     isError,
@@ -141,37 +63,36 @@ export default function VaultScreen() {
   const showSpinner = listMode === 'spinner';
   const showError = listMode === 'error';
 
-  const [network, setNetwork] = useState('all');
-  const [fee, setFee] = useState<FeeFilter>('all');
-  const [bank, setBank] = useState('all');
-  const [sort, setSort] = useState<SortKey>('recent');
-  const [filtersOpen, setFiltersOpen] = useState(false);
-
-  const bankChips = useMemo(() => {
-    const banks = [...new Set((cards ?? []).map((c) => c.bankName).filter(Boolean))].sort();
-    return [{ id: 'all', label: 'All banks' }, ...banks.map((b) => ({ id: b, label: b }))];
-  }, [cards]);
-
-  const filtered = useMemo(
-    () => filterAndSort(cards ?? [], network, fee, bank, sort),
-    [cards, network, fee, bank, sort],
-  );
-
-  const activeFilterCount =
-    (network !== 'all' ? 1 : 0) +
-    (fee !== 'all' ? 1 : 0) +
-    (bank !== 'all' ? 1 : 0) +
-    (sort !== 'recent' ? 1 : 0);
-
-  const clearFilters = () => {
-    setNetwork('all');
-    setFee('all');
-    setBank('all');
-    setSort('recent');
-  };
-
+  const list = useMemo(() => sortRecent(cards ?? []), [cards]);
   const totalCount = cards?.length ?? 0;
-  const density = vaultDensityForCount(totalCount);
+
+  const [openRowId, setOpenRowId] = useState<string | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+
+  const exitSelection = useCallback(() => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+    setOpenRowId(null);
+  }, []);
+
+  const enterSelection = useCallback((id: string) => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setOpenRowId(null);
+    setSelectionMode(true);
+    setSelectedIds(new Set([id]));
+  }, []);
+
+  const toggleSelect = useCallback((id: string) => {
+    void Haptics.selectionAsync();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
   const goAdd = () =>
     requireAuth({
       message: AUTH_REASONS.addCard,
@@ -184,8 +105,47 @@ export default function VaultScreen() {
       then: () => router.push(`/card/${id}` as Href),
     });
 
-  // Sit just above the floating tab bar (~72px bar + safe area gap).
+  const confirmDeleteIds = useCallback(
+    async (ids: string[]) => {
+      if (ids.length === 0) return;
+      const names = ids
+        .map((id) => list.find((c) => c.id === id)?.nickname)
+        .filter(Boolean);
+      const title =
+        ids.length === 1
+          ? 'Delete this card?'
+          : `Delete ${ids.length} cards?`;
+      const message =
+        ids.length === 1
+          ? `"${names[0] ?? 'This card'}" and all its benefits, milestones, and shares will be permanently removed. This can’t be undone.`
+          : `These ${ids.length} cards and all associated benefits, milestones, and shares will be permanently removed. This can’t be undone.`;
+      const ok = await confirmDialog({
+        title,
+        message,
+        icon: 'trash-outline',
+        confirmLabel: ids.length === 1 ? 'Delete' : 'Delete all',
+        destructive: true,
+      });
+      if (!ok) return;
+      try {
+        await deleteCards.mutateAsync(ids);
+        exitSelection();
+        setOpenRowId(null);
+      } catch (err) {
+        logger.warn('Vault delete failed', err);
+        showDialog({
+          title: 'Delete failed',
+          message: 'Those cards could not be removed. Please try again.',
+          icon: 'alert-circle-outline',
+          tone: 'amber',
+        });
+      }
+    },
+    [deleteCards, exitSelection, list],
+  );
+
   const fabBottom = insets.bottom + 88;
+  const selectionBarBottom = insets.bottom + 88;
 
   return (
     <View style={styles.root}>
@@ -196,24 +156,18 @@ export default function VaultScreen() {
           { paddingTop: insets.top + spacing.md, paddingHorizontal: spacing.xl },
         ]}
       >
-        <View style={styles.headerText}>
-          <Eyebrow color={palette.indigo}>Vault</Eyebrow>
-          <AppText variant="h1">Your cards</AppText>
-          {activeFilterCount > 0 ? (
-            <AppText variant="caption" color={palette.indigo}>
-              {filtered.length} of {totalCount} shown
+        <AppText variant="h1">Vault</AppText>
+        {selectionMode ? (
+          <Pressable onPress={exitSelection} hitSlop={8}>
+            <AppText variant="body" color={palette.indigo}>
+              Cancel
             </AppText>
-          ) : totalCount > 0 ? (
-            <AppText variant="caption" color={palette.textTertiary}>
-              {totalCount} card{totalCount === 1 ? '' : 's'} ·{' '}
-              {density === 'spotlight'
-                ? 'spotlight view'
-                : density === 'compact'
-                  ? 'compact view'
-                  : 'list view'}
-            </AppText>
-          ) : null}
-        </View>
+          </Pressable>
+        ) : totalCount > 0 ? (
+          <Eyebrow color={palette.textTertiary} style={styles.count}>
+            {`${totalCount} active`}
+          </Eyebrow>
+        ) : null}
       </View>
 
       {showSpinner ? (
@@ -242,59 +196,40 @@ export default function VaultScreen() {
           <ScrollView
             contentContainerStyle={[
               styles.list,
-              { paddingBottom: insets.bottom + 168 },
+              {
+                paddingBottom:
+                  insets.bottom + (selectionMode ? 200 : 168),
+              },
             ]}
             showsVerticalScrollIndicator={false}
+            onScrollBeginDrag={() => {
+              if (openRowId) setOpenRowId(null);
+            }}
+            keyboardShouldPersistTaps="handled"
           >
-            {filtered.length === 0 ? (
-              <View style={styles.noMatchWrap}>
-                <AppText
-                  variant="body"
-                  color={palette.textSecondary}
-                  style={styles.noMatch}
-                >
-                  No cards match these filters.
-                </AppText>
-                <Pressable onPress={clearFilters} hitSlop={8}>
-                  <AppText variant="small" color={palette.indigo}>
-                    Clear filters
-                  </AppText>
-                </Pressable>
-              </View>
-            ) : (
-              <VaultCardList
-                cards={filtered}
-                totalCount={totalCount}
-                onSelect={goDetail}
-              />
-            )}
+            <VaultCardList
+              cards={list}
+              onSelect={goDetail}
+              onLongPressSelect={enterSelection}
+              onRequestDelete={(id) => void confirmDeleteIds([id])}
+              openRowId={openRowId}
+              onOpenRowChange={setOpenRowId}
+              selectionMode={selectionMode}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+            />
           </ScrollView>
-
-          <VaultFilterFab
-            bottom={fabBottom}
-            activeCount={activeFilterCount}
-            onPress={() => setFiltersOpen(true)}
-          />
-          <VaultAddCardFab bottom={fabBottom} onPress={goAdd} />
-
-          <VaultFiltersSheet
-            visible={filtersOpen}
-            onClose={() => setFiltersOpen(false)}
-            network={network}
-            fee={fee}
-            bank={bank}
-            sort={sort}
-            onNetworkChange={setNetwork}
-            onFeeChange={setFee}
-            onBankChange={setBank}
-            onSortChange={setSort}
-            networkOptions={NETWORK_CHIPS}
-            feeOptions={FEE_CHIPS}
-            bankOptions={bankChips}
-            sortOptions={SORT_CHIPS}
-            activeCount={activeFilterCount}
-            onClear={clearFilters}
-          />
+          {selectionMode ? (
+            <VaultSelectionBar
+              count={selectedIds.size}
+              bottom={selectionBarBottom}
+              deleting={deleteCards.isPending}
+              onCancel={exitSelection}
+              onDelete={() => void confirmDeleteIds([...selectedIds])}
+            />
+          ) : (
+            <VaultAddCardFab bottom={fabBottom} onPress={goAdd} />
+          )}
         </>
       ) : null}
     </View>
@@ -304,19 +239,15 @@ export default function VaultScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   header: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
     marginBottom: spacing.md,
+    gap: spacing.md,
   },
-  headerText: { gap: 2 },
+  count: { flexShrink: 0 },
   list: {
     paddingHorizontal: spacing.xl,
-  },
-  noMatchWrap: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.xxl,
-  },
-  noMatch: {
-    textAlign: 'center',
   },
   center: {
     flex: 1,

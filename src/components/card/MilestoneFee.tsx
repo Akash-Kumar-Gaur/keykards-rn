@@ -1,16 +1,9 @@
 /**
- * MilestoneRingCard + FeePaybackBar — visual progress for the Card Detail
- * screen. Milestone ring includes reset overflow + past-cycle history.
+ * MilestoneRingCard + FeePaybackBar — Card Detail progress / fee facts.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { AppText, Eyebrow } from '@/components/ui/AppText';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -18,12 +11,11 @@ import { RadialProgress } from '@/components/ui/RadialProgress';
 import { CountUpText } from '@/components/ui/CountUpText';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { PillButton } from '@/components/ui/PillButton';
+import { ConfidenceBadge } from '@/components/ui/ConfidenceBadge';
 import { formatInr } from '@/lib/cardUtils';
-import { feePaybackPresentation } from '@/lib/feePayback';
 import type { MilestoneCycle } from '@/lib/milestoneReset';
-import { radius, spacing, motion } from '@/theme';
+import { radius, spacing } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export interface MilestoneRingData {
   spent: number;
@@ -71,13 +63,7 @@ export function MilestoneRingCard({
       <View style={styles.sectionHead}>
         <Eyebrow color={palette.indigo}>Milestone spend</Eyebrow>
         <View style={styles.headRight}>
-          {data.isEstimated ? (
-            <View style={[styles.estBadge, { backgroundColor: palette.amberSoft }]}>
-              <AppText variant="caption" color={palette.amber}>
-                Estimated
-              </AppText>
-            </View>
-          ) : null}
+          {data.isEstimated ? <ConfidenceBadge kind="estimated" /> : null}
           {onReset ? (
             <Pressable
               onPress={() => setMenuOpen(true)}
@@ -220,127 +206,36 @@ export function MilestoneRingCard({
 }
 
 /**
- * Benefit value against the annual fee. `benefitValue` is an estimated ceiling
- * from the catalog, not money recovered from spend, so the copy stays in
- * potential terms and the headline figure is never capped at 100%.
+ * Annual fee (user-entered fact) with a pointer to listed benefits.
+ * Does not show value_estimate sums or “payback %” — those invent numbers.
  */
 export function FeePaybackBar({
   annualFee,
-  recovered: benefitValue,
-  play,
+  benefitCount = 0,
 }: {
   annualFee: number;
-  recovered: number;
-  play: boolean;
+  /** @deprecated Ignored — catalog value sums are not displayed. */
+  recovered?: number;
+  play?: boolean;
+  benefitCount?: number;
 }) {
   const palette = usePalette();
-  const reduced = useReducedMotion();
-  const presentation = feePaybackPresentation(
-    annualFee,
-    benefitValue,
-    formatInr,
-  );
-  const {
-    safeFee,
-    benefitValue: safeBenefitValue,
-    progress: ratio,
-    remaining,
-    headline,
-    summary,
-  } = presentation;
-
-  const fill = useSharedValue(0);
-  useEffect(() => {
-    if (!play) return;
-    fill.value = reduced
-      ? ratio
-      : withTiming(ratio, {
-          duration: motion.progressDuration,
-          easing: Easing.out(Easing.cubic),
-        });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [play, reduced, ratio]);
-
-  const recoveredStyle = useAnimatedStyle(() => ({
-    flex: Math.max(0.0001, fill.value),
-  }));
-  const remainingStyle = useAnimatedStyle(() => ({
-    flex: Math.max(0.0001, 1 - fill.value),
-  }));
+  const safeFee = Number.isFinite(annualFee) ? Math.max(0, annualFee) : 0;
+  if (safeFee <= 0) return null;
 
   return (
     <View style={styles.section}>
-      <Eyebrow color={palette.indigo}>Benefit value vs fee</Eyebrow>
+      <Eyebrow color={palette.indigo}>Annual fee</Eyebrow>
       <GlassCard style={styles.feeCard} padding={spacing.xl}>
-        <View style={styles.feeTopRow}>
-          <AppText
-            variant="stat"
-            color={remaining > 0 ? palette.amber : palette.green}
-            adjustsFontSizeToFit
-            minimumFontScale={0.72}
-            numberOfLines={1}
-          >
-            {headline}
-          </AppText>
-          <AppText
-            variant="small"
-            color={palette.textSecondary}
-            style={styles.feeTopLabel}
-          >
-            {summary}
-          </AppText>
-        </View>
-
-        <View style={[styles.feeBar, { backgroundColor: palette.trackBg }]}>
-          <Animated.View style={[styles.segRecovered, { backgroundColor: palette.green }, recoveredStyle]} />
-          <Animated.View style={[styles.segRemaining, { backgroundColor: palette.trackBg }, remainingStyle]} />
-        </View>
-
-        <View style={styles.feeLegend}>
-          <Legend
-            color={palette.green}
-            label="Benefit value (est.)"
-            value={formatInr(safeBenefitValue)}
-          />
-          <Legend
-            color={palette.textSecondary}
-            label="Annual fee"
-            value={formatInr(safeFee)}
-            muted
-          />
-        </View>
-        <AppText variant="caption" color={palette.textTertiary}>
-          Estimated from the card’s listed benefits — not spend-based, and not a
-          guarantee of value you’ll actually use.
+        <AppText variant="stat" color={palette.textPrimary}>
+          {formatInr(safeFee)}
+        </AppText>
+        <AppText variant="small" color={palette.textSecondary}>
+          {benefitCount > 0
+            ? `This card lists ${benefitCount} benefit${benefitCount === 1 ? '' : 's'} — review them below to judge value yourself.`
+            : 'Add benefits on this card to see what it offers against this fee.'}
         </AppText>
       </GlassCard>
-    </View>
-  );
-}
-
-function Legend({
-  color,
-  label,
-  value,
-  muted,
-}: {
-  color: string;
-  label: string;
-  value: string;
-  muted?: boolean;
-}) {
-  const palette = usePalette();
-  return (
-    <View style={styles.legendItem}>
-      <View style={[styles.legendDot, { backgroundColor: color }]} />
-      <View style={styles.legendCopy}>
-        <AppText variant="caption" color={palette.textTertiary}>
-          {label}
-        </AppText>
-        <AppText variant="small" color={muted ? palette.textSecondary : palette.textPrimary}>
-          {value}
-        </AppText>
-      </View>
     </View>
   );
 }
@@ -389,34 +284,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
-  feeCard: { gap: spacing.lg },
-  feeTopRow: { gap: spacing.xs },
-  feeTopLabel: { maxWidth: '100%', lineHeight: 20 },
-  feeBar: {
-    flexDirection: 'row',
-    height: 14,
-    borderRadius: radius.pill,
-    overflow: 'hidden',
-  },
-  segRecovered: {
-    borderRadius: radius.pill,
-  },
-  segRemaining: {
-    borderRadius: radius.pill,
-  },
-  feeLegend: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    flexGrow: 1,
-    flexBasis: 128,
-    minWidth: 0,
-  },
-  legendCopy: { flex: 1, minWidth: 0 },
-  legendDot: { width: 10, height: 10, borderRadius: 5 },
+  feeCard: { gap: spacing.md },
 });

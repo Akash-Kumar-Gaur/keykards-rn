@@ -166,6 +166,9 @@ export function CardForm({
     initial?.cardOpenedApprox ?? '',
   );
   const [draftBenefits, setDraftBenefits] = useState<BenefitFormInput[]>([]);
+  const [livePreviewMessage, setLivePreviewMessage] = useState<string | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   // Apply scan/NFC prefill without ever defaulting to a revealed PAN.
@@ -320,7 +323,10 @@ export function CardForm({
     if (detected) setNetwork(detected);
   };
 
-  const applyCatalog = (entry: CardCatalogEntry) => {
+  const applyCatalog = (
+    entry: CardCatalogEntry,
+    meta?: { fromLiveSearch?: boolean; message?: string },
+  ) => {
     setCatalogEntry(entry);
     setManualMode(false);
     setNickname(entry.cardName);
@@ -336,11 +342,18 @@ export function CardForm({
       entry.defaultAnnualFee != null ? String(entry.defaultAnnualFee) : '',
     );
     setDraftBenefits(seedsToDrafts(entry));
+    setLivePreviewMessage(
+      meta?.fromLiveSearch
+        ? meta.message ??
+            `Here’s what we found for ${entry.cardName} — does this look right?`
+        : null,
+    );
   };
 
   const clearCatalog = () => {
     setCatalogEntry(null);
     setDraftBenefits([]);
+    setLivePreviewMessage(null);
     setSuggestedTheme(null);
     setSuggestedBankLabel(null);
   };
@@ -457,6 +470,7 @@ export function CardForm({
             setManualMode(true);
             setCatalogEntry(null);
             setDraftBenefits([]);
+            setLivePreviewMessage(null);
           }}
           manualMode={manualMode}
         />
@@ -648,6 +662,23 @@ export function CardForm({
           />
         ))}
       </View>
+
+      {mode === 'create' && livePreviewMessage && draftBenefits.length > 0 ? (
+        <View
+          style={[
+            styles.notice,
+            {
+              backgroundColor: palette.indigoSoft,
+              borderColor: palette.glassBorder,
+            },
+          ]}
+        >
+          <Ionicons name="sparkles-outline" size={18} color={palette.indigo} />
+          <AppText variant="small" color={palette.textPrimary} style={styles.noticeText}>
+            {livePreviewMessage}
+          </AppText>
+        </View>
+      ) : null}
 
       {mode === 'create' && draftBenefits.length > 0 ? (
         <CatalogBenefitsSummary

@@ -1,6 +1,6 @@
 /**
- * HomeCardsCarousel — horizontal quick-access row of Vault Tier-2 compact cards.
- * Shown on Home when Smart Swipe is not eligible (low card/txn signal).
+ * HomeCardsCarousel — permanent Home strip of compact metallic cards.
+ * Next card peeks from the right; no section header (layout matches reference).
  */
 
 import React from 'react';
@@ -13,16 +13,17 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { AnimatedEntrance } from '@/components/ui/AnimatedEntrance';
-import { AppText, Eyebrow } from '@/components/ui/AppText';
+import { AppText } from '@/components/ui/AppText';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { VaultCompactCard } from '@/components/vault/VaultCompactCard';
-import { vaultCardHeight, vaultStagger } from '@/lib/vaultDensity';
+import { HomeCarouselCard } from '@/components/home/HomeCarouselCard';
 import { radius, spacing } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
 import type { VaultCard } from '@/types/card';
 
+/** ~72% viewport so the next card peeks (~18–22% + gap). */
 const CARD_WIDTH_RATIO = 0.72;
+/** Slightly flatter than ISO ID-1 so Home density matches the reference. */
+const CARD_ASPECT = 1.72;
 const CARD_GAP = spacing.md;
 
 export function HomeCardsCarousel({
@@ -39,87 +40,69 @@ export function HomeCardsCarousel({
   onAddCard: () => void;
 }) {
   const palette = usePalette();
-  const { width } = useWindowDimensions();
-  const cardWidth = Math.round(width * CARD_WIDTH_RATIO);
-  const cardHeight = vaultCardHeight('compact', cardWidth);
+  const { width: screenW } = useWindowDimensions();
+  const cardWidth = Math.round(screenW * CARD_WIDTH_RATIO);
+  const cardHeight = Math.round(cardWidth / CARD_ASPECT);
+
+  if (loading && cards.length === 0) {
+    return (
+      <View style={[styles.loading, { height: cardHeight }]}>
+        <ActivityIndicator color={palette.indigo} />
+      </View>
+    );
+  }
+
+  if (cards.length === 0) {
+    return (
+      <GlassCard style={styles.empty} padding={spacing.lg}>
+        <AppText variant="body" color={palette.textSecondary}>
+          Your cards will show up here once you add one.
+        </AppText>
+      </GlassCard>
+    );
+  }
 
   return (
-    <AnimatedEntrance delay={delay} offsetY={18} style={styles.wrap}>
-      <View style={styles.header}>
-        <Eyebrow color={palette.indigo}>Vault</Eyebrow>
-        <AppText variant="title">Your cards</AppText>
-        <AppText variant="caption" color={palette.textTertiary}>
-          Tap a card to open details
-        </AppText>
-      </View>
-
-      {loading ? (
-        <View style={styles.loading}>
-          <ActivityIndicator color={palette.indigo} />
-        </View>
-      ) : cards.length === 0 ? (
-        <GlassCard style={styles.empty} padding={spacing.lg}>
-          <AppText variant="body" color={palette.textSecondary}>
-            Add your first card to see it here for quick access.
-          </AppText>
-          <Pressable
-            onPress={onAddCard}
-            style={styles.emptyCta}
-            accessibilityRole="button"
-            accessibilityLabel="Add your first card"
-          >
-            <Ionicons name="add-circle-outline" size={20} color={palette.indigo} />
-            <AppText variant="small" color={palette.indigo}>
-              Add your first card
-            </AppText>
-          </Pressable>
-        </GlassCard>
-      ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          decelerationRate="fast"
-          snapToInterval={cardWidth + CARD_GAP}
-          snapToAlignment="start"
-          // Bleed to screen edges while Home content stays padded.
-          style={styles.scroller}
-          contentContainerStyle={[
-            styles.row,
-            { paddingHorizontal: spacing.xl },
-          ]}
-        >
-          {cards.map((card, i) => (
-            <AnimatedEntrance
-              key={card.id}
-              delay={vaultStagger('compact', i)}
-              offsetY={14}
-              style={{ width: cardWidth }}
-            >
-              <VaultCompactCard
-                card={card}
-                height={cardHeight}
-                onPress={() => onSelectCard(card.id)}
-              />
-            </AnimatedEntrance>
-          ))}
-        </ScrollView>
-      )}
-    </AnimatedEntrance>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      decelerationRate="fast"
+      snapToInterval={cardWidth + CARD_GAP}
+      snapToAlignment="start"
+      style={styles.scroller}
+      contentContainerStyle={[
+        styles.row,
+        {
+          // Align first card with Home content padding; peek extends past.
+          paddingLeft: spacing.xl,
+          paddingRight: spacing.xl,
+        },
+      ]}
+    >
+      {cards.map((card, i) => (
+        <HomeCarouselCard
+          key={card.id}
+          card={card}
+          width={cardWidth}
+          height={cardHeight}
+          index={i}
+          delay={delay}
+          onPress={() => onSelectCard(card.id)}
+        />
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { width: '100%', gap: spacing.sm },
-  header: { gap: 2, paddingHorizontal: 2 },
+  scroller: {
+    marginHorizontal: -spacing.xl,
+  },
   row: {
     gap: CARD_GAP,
     paddingVertical: spacing.xs,
   },
-  scroller: {
-    marginHorizontal: -spacing.xl,
-  },
   loading: {
-    minHeight: 88,
     alignItems: 'center',
     justifyContent: 'center',
   },

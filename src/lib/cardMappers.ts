@@ -46,6 +46,7 @@ export type BenefitRow = {
   category: string;
   description: string | null;
   value_estimate: number | string | null;
+  period_raw?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -110,6 +111,7 @@ export function mapBenefitRow(row: BenefitRow): CardBenefit {
     category: row.category as BenefitCategory,
     description: row.description ?? '',
     valueEstimate: num(row.value_estimate),
+    periodRaw: row.period_raw ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

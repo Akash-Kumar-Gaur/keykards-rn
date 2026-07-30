@@ -69,7 +69,6 @@ const OVERFLOW_ACTIONS: OverflowAction[] = [
   { id: 'edit', label: 'Edit card', icon: 'create-outline' },
   { id: 'manage', label: 'Benefits & milestones', icon: 'gift-outline' },
   { id: 'statement', label: 'Upload statement', icon: 'document-text-outline' },
-  { id: 'share', label: 'Share this card', icon: 'share-outline' },
   { id: 'shares', label: 'Shared links', icon: 'link-outline' },
   { id: 'delete', label: 'Delete card', icon: 'trash-outline', destructive: true },
 ];
@@ -154,16 +153,18 @@ export default function CardDetailScreen() {
   }, [snapshot, milestones, id]);
 
   const feeData = useMemo(() => {
+    if (card?.annualFee && card.annualFee > 0) {
+      return {
+        annualFee: card.annualFee,
+        benefitCount: benefits.length,
+      };
+    }
     const fromSnapshot = snapshot?.feePayback.find((f) => f.cardId === id);
     if (fromSnapshot && fromSnapshot.annualFee > 0) {
       return {
         annualFee: fromSnapshot.annualFee,
-        recovered: fromSnapshot.benefitValueSum,
+        benefitCount: benefits.length,
       };
-    }
-    if (card?.annualFee && card.annualFee > 0) {
-      const recovered = benefits.reduce((s, b) => s + (b.valueEstimate ?? 0), 0);
-      return { annualFee: card.annualFee, recovered };
     }
     return null;
   }, [snapshot, card, benefits, id]);
@@ -199,7 +200,8 @@ export default function CardDetailScreen() {
 
   const quickChips: QuickChip[] = useMemo(() => {
     if (!card) return [];
-    // Network + last 4 are glance-only (one pill). Only fee jumps to a section.
+    // Network + last 4 are glance-only (one pill). Fee jumps to a section.
+    // Share lives in the header (primary) and overflow (secondary).
     const chips: QuickChip[] = [
       {
         id: 'identity',
@@ -211,7 +213,9 @@ export default function CardDetailScreen() {
       const soon = renewal.daysUntil <= 45;
       chips.push({
         id: 'fee',
-        label: `Fee due in ${Math.max(0, renewal.daysUntil)}d`,
+        label: renewal.isConfirmed
+          ? `Fee due in ${Math.max(0, renewal.daysUntil)}d`
+          : `Fee due ~${Math.max(0, renewal.daysUntil)}d (est.)`,
         icon: 'calendar-outline',
         tone: soon ? 'amber' : 'green',
         target: 'fee',
@@ -257,8 +261,6 @@ export default function CardDetailScreen() {
     else if (action === 'manage') router.push(`/card/${card.id}/extras` as Href);
     else if (action === 'statement')
       router.push(`/card/${card.id}/statement` as Href);
-    else if (action === 'share')
-      router.push(`/card/${card.id}/share` as Href);
     else if (action === 'shares')
       router.push(`/card/${card.id}/shares` as Href);
     else if (action === 'delete') onDelete();
@@ -365,6 +367,7 @@ export default function CardDetailScreen() {
                     router.push(`/card/${card.id}/edit` as Href)
                   }
                   onEditCardholderName={() => setNameSheetOpen(true)}
+                  onShare={() => router.push(`/card/${card.id}/share` as Href)}
                 />
                 <RevealAffordance cardId={card.id} />
               </View>
@@ -415,7 +418,7 @@ export default function CardDetailScreen() {
                 {(play) => (
                   <FeePaybackBar
                     annualFee={feeData.annualFee}
-                    recovered={feeData.recovered}
+                    benefitCount={feeData.benefitCount}
                     play={play}
                   />
                 )}
@@ -480,7 +483,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     marginBottom: spacing.md,
   },
-  headerText: { flex: 1, gap: 2 },
+  headerText: { flex: 1, gap: 2, minWidth: 0 },
   iconBtn: {
     width: 40,
     height: 40,

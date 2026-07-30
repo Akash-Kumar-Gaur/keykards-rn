@@ -17,7 +17,11 @@ interface AuthState {
   initializing: boolean;
   setSession: (session: Session | null) => void;
   init: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<{ error?: string }>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string,
+  ) => Promise<{ error?: string }>;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 }
@@ -43,8 +47,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  signUp: async (email, password) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+  signUp: async (email, password, fullName) => {
+    const name = fullName.trim().replace(/\s+/g, ' ').slice(0, 80);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: name },
+      },
+    });
     if (error) {
       logger.warn('Sign up failed', error);
       return { error: error.message };

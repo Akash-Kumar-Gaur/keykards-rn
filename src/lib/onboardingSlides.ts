@@ -17,32 +17,32 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
     key: 'vault',
     icon: 'lock-closed-outline',
     eyebrow: 'Vault',
-    headline: 'Your cards, secured on this device',
+    headline: 'Add a card — see everything it offers',
     description:
-      'Card numbers are encrypted on this device and revealed only after biometric verification.',
-  },
-  {
-    key: 'track',
-    icon: 'stats-chart-outline',
-    eyebrow: 'Track',
-    headline: "Never miss what you're owed",
-    description:
-      'Points expiry, annual fees, spend milestones, and subscriptions — tracked in one place.',
+      'Benefits, fees, lounge access, and network — pulled from our catalog the moment you add a card. Encrypted on this device.',
   },
   {
     key: 'optimize',
     icon: 'sparkles-outline',
-    eyebrow: 'Optimize',
+    eyebrow: 'Smart Swipe',
     headline: 'Know which card to swipe',
     description:
-      'Smart recommendations before you pay, so every swipe earns the most.',
+      'Compare reward rates across your wallet by category — dining, fuel, travel — with no spend history required.',
+  },
+  {
+    key: 'track',
+    icon: 'checkbox-outline',
+    eyebrow: 'Track',
+    headline: 'Checklist, renewals, and cover',
+    description:
+      'Tick lounge visits, see fee dates, and look up purchase protection. Optional imports can automate more later.',
   },
   {
     key: 'protect',
     icon: 'shield-checkmark-outline',
-    eyebrow: 'Protect',
-    headline: "Warranties you won't forget",
+    eyebrow: 'Optional',
+    headline: 'Connect only if you want automation',
     description:
-      "Purchase protection tracking so coverage doesn't disappear into a drawer.",
+      'Clipboard, statements, and Gmail can track spend automatically — never required for KeyKards to be useful.',
   },
 ];

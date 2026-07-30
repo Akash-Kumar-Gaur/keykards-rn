@@ -1,7 +1,11 @@
 /**
- * Gmail adapter (client) — opt-in connection state + helpers.
+ * Gmail adapter (client) — connection state helpers.
  * Actual mailbox reads run in Supabase Edge Function `gmail-sync` on cron
- * with gmail.readonly; this module only manages local/opt-in UX hooks.
+ * with gmail.readonly; this module only manages connection UX hooks.
+ *
+ * Integrity: never treat a row as "connected" unless a verified OAuth refresh
+ * token exists. `markGmailConnected` must only be called AFTER the Edge
+ * Function has stored `refresh_token_encrypted` from a real token exchange.
  */
 
 import { gmailBankQuery } from '@/lib/bankSenderDomains';
@@ -10,10 +14,23 @@ import {
   parseTransactionText,
 } from '@/lib/transactionParser';
 import { supabase } from '@/lib/supabase';
+import {
+  isVerifiedGmailConnection,
+  type GmailConnectionVerification,
+} from '@/lib/gmailConnection';
 import type { ParseResult, ParserMatchContext } from '@/types/track';
 
 export const GMAIL_READONLY_SCOPE =
   'https://www.googleapis.com/auth/gmail.readonly';
+
+export type GmailConnectionRow = GmailConnectionVerification & {
+  user_id: string;
+  connected_at: string;
+  last_sync_at: string | null;
+  email_address: string | null;
+};
+
+export { isVerifiedGmailConnection };
 
 export function buildGmailSearchQuery(afterDays = 14): string {
   return gmailBankQuery(afterDays);
@@ -43,8 +60,10 @@ export async function disconnectGmail(userId: string): Promise<void> {
 }
 
 /**
- * Mark connection after OAuth completes (token stored by Edge Function).
- * Client never persists the refresh token in plaintext.
+ * Mark connection AFTER OAuth completes and the Edge Function has stored the
+ * refresh token. Client never persists the refresh token in plaintext.
+ *
+ * Do not call this from UI "opt-in" stubs — that creates a fake Connected state.
  */
 export async function markGmailConnected(args: {
   userId: string;

@@ -243,8 +243,13 @@ export async function runCatalogScrape(opts: RunOptions = {}): Promise<RunSummar
             });
           } else {
             summary.success += 1;
+            const status = result.outcome === 'dry_run'
+              ? 'dry_run'
+              : result.needsReview
+                ? 'needs_review'
+                : 'success';
             pushResult({
-              status: result.outcome === 'dry_run' ? 'dry_run' : 'success',
+              status,
               confidence: 'high',
               usedPlaywright: fetched.usedPlaywright,
               sourceUrl: lastUrl,
@@ -254,10 +259,13 @@ export async function runCatalogScrape(opts: RunOptions = {}): Promise<RunSummar
                 source_url: lastUrl,
                 bank_name: data.bank_name,
                 card_name: data.card_name,
-                status: 'success',
+                status: result.needsReview ? 'needs_review' : 'success',
                 confidence: 'high',
                 raw_snippet: lastSnippet,
                 proposed_json: data,
+                error_message: result.needsReview
+                  ? 'Value sanity: benefit estimate >10× annual fee — parked as needs_review'
+                  : null,
               });
             }
           }
@@ -512,8 +520,13 @@ async function runQueueExtraction(
         }
       } else {
         summary.success += 1;
+        const status = result.outcome === 'dry_run'
+          ? 'dry_run'
+          : result.needsReview
+            ? 'needs_review'
+            : 'success';
         pushResult({
-          status: result.outcome === 'dry_run' ? 'dry_run' : 'success',
+          status,
           confidence: 'high',
           usedPlaywright: fetched.usedPlaywright,
           sourceUrl: lastUrl,
@@ -523,10 +536,13 @@ async function runQueueExtraction(
             source_url: lastUrl,
             bank_name: data.bank_name,
             card_name: data.card_name,
-            status: 'success',
+            status: result.needsReview ? 'needs_review' : 'success',
             confidence: 'high',
             raw_snippet: lastSnippet,
             proposed_json: data,
+            error_message: result.needsReview
+              ? 'Value sanity: benefit estimate >10× annual fee — parked as needs_review'
+              : null,
           });
           await markKnownCardExtracted({
             id: row.id,

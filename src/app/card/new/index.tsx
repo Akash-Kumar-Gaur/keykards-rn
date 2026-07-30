@@ -1,5 +1,6 @@
 /**
  * Add card — choose Scan, Tap to read (NFC, Android beta), or Manual entry.
+ * iOS NFC is disabled in-place (Coming soon) — never navigates to a stub.
  */
 
 import React, { useEffect } from 'react';
@@ -21,6 +22,8 @@ type Method = {
   icon: keyof typeof Ionicons.glyphMap;
   href: Href;
   badge?: string;
+  /** When true, row is visible but not tappable (e.g. iOS NFC). */
+  disabled?: boolean;
 };
 
 const METHODS: Method[] = [
@@ -40,7 +43,8 @@ const METHODS: Method[] = [
         : 'Hold your card to the phone (Android, beta)',
     icon: 'wifi',
     href: '/card/new/nfc' as Href,
-    badge: Platform.OS === 'android' ? 'Android · beta' : 'Coming soon',
+    badge: Platform.OS === 'ios' ? 'Coming soon' : 'Android · beta',
+    disabled: Platform.OS === 'ios',
   },
   {
     id: 'manual',
@@ -80,28 +84,53 @@ export default function NewCardChooserScreen() {
         </AppText>
 
         <View style={styles.list}>
-          {METHODS.map((m) => (
-            <Pressable
-              key={m.id}
-              onPress={() => router.push(m.href)}
-              accessibilityRole="button"
-              accessibilityLabel={`${m.title}. ${m.subtitle}`}
-            >
-              <GlassCard style={styles.card} padding={spacing.lg}>
-                <View style={[styles.iconWrap, { backgroundColor: palette.indigoSoft }]}>
+          {METHODS.map((m) => {
+            const disabled = Boolean(m.disabled);
+            const body = (
+              <GlassCard
+                style={[styles.card, disabled && styles.cardDisabled]}
+                padding={spacing.lg}
+              >
+                <View
+                  style={[
+                    styles.iconWrap,
+                    {
+                      backgroundColor: disabled
+                        ? palette.glassFill
+                        : palette.indigoSoft,
+                    },
+                  ]}
+                >
                   <Ionicons
                     name={m.icon}
                     size={22}
-                    color={palette.indigo}
+                    color={disabled ? palette.textTertiary : palette.indigo}
                     style={m.id === 'nfc' ? styles.nfcIcon : undefined}
                   />
                 </View>
                 <View style={styles.cardText}>
                   <View style={styles.titleRow}>
-                    <AppText variant="title">{m.title}</AppText>
+                    <AppText
+                      variant="title"
+                      color={disabled ? palette.textTertiary : undefined}
+                    >
+                      {m.title}
+                    </AppText>
                     {m.badge ? (
-                      <View style={[styles.badge, { backgroundColor: palette.indigoSoft }]}>
-                        <AppText variant="caption" color={palette.indigo}>
+                      <View
+                        style={[
+                          styles.badge,
+                          {
+                            backgroundColor: disabled
+                              ? palette.glassFill
+                              : palette.indigoSoft,
+                          },
+                        ]}
+                      >
+                        <AppText
+                          variant="caption"
+                          color={disabled ? palette.textTertiary : palette.indigo}
+                        >
                           {m.badge}
                         </AppText>
                       </View>
@@ -111,10 +140,42 @@ export default function NewCardChooserScreen() {
                     {m.subtitle}
                   </AppText>
                 </View>
-                <Ionicons name="chevron-forward" size={18} color={palette.textTertiary} />
+                {!disabled ? (
+                  <Ionicons
+                    name="chevron-forward"
+                    size={18}
+                    color={palette.textTertiary}
+                  />
+                ) : (
+                  <View style={styles.chevronSpacer} />
+                )}
               </GlassCard>
-            </Pressable>
-          ))}
+            );
+
+            if (disabled) {
+              return (
+                <View
+                  key={m.id}
+                  accessibilityRole="text"
+                  accessibilityState={{ disabled: true }}
+                  accessibilityLabel={`${m.title}. ${m.subtitle}`}
+                >
+                  {body}
+                </View>
+              );
+            }
+
+            return (
+              <Pressable
+                key={m.id}
+                onPress={() => router.push(m.href)}
+                accessibilityRole="button"
+                accessibilityLabel={`${m.title}. ${m.subtitle}`}
+              >
+                {body}
+              </Pressable>
+            );
+          })}
         </View>
       </View>
     </View>
@@ -148,6 +209,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
+  cardDisabled: {
+    opacity: 0.72,
+  },
   iconWrap: {
     width: 44,
     height: 44,
@@ -168,4 +232,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
+  chevronSpacer: { width: 18 },
 });

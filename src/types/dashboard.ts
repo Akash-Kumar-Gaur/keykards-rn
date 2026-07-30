@@ -40,7 +40,10 @@ export interface DashboardData {
    * Not a display tile; used only for Home layout branching.
    */
   recentConfirmedTxnCount: number;
-  /** null until Optimize (Phase 4) has a real recommendation. */
+  /**
+   * Catalog-powered Smart Swipe recommendation (benefits only).
+   * Null until ≥2 cards produce a category pick.
+   */
   smartSwipe: SmartSwipeRecommendation | null;
   expiring: StatTileData | null;
   annualFees: StatTileData | null;

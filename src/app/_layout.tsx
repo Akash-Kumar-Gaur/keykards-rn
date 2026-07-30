@@ -28,6 +28,7 @@ import { QueryProvider } from '@/providers/QueryProvider';
 import { AppThemeProvider, usePalette } from '@/providers/AppThemeProvider';
 import { SecurityLayer } from '@/components/security/SecurityLayer';
 import { AppLockGate } from '@/components/security/AppLockGate';
+import { ScreenshotMode } from '@/components/screenshot/ScreenshotMode';
 import { AnimatedSplashReveal } from '@/components/splash/AnimatedSplashReveal';
 import { AppDialogHost } from '@/components/ui/AppDialog';
 import { ShareDeepLinkHandler } from '@/components/share/ShareDeepLinkHandler';
@@ -136,19 +137,21 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <KeyboardProvider>
-          <QueryProvider>
-            <AppThemeProvider>
-              <RootNavigation
-                revealDone={revealDone}
-                onRevealFinished={onRevealFinished}
-                enforceAppLock={enforceAppLock}
-              />
-              <ShareDeepLinkHandler />
-              <AppDialogHost />
-            </AppThemeProvider>
-          </QueryProvider>
-        </KeyboardProvider>
+        <ScreenshotMode>
+          <KeyboardProvider>
+            <QueryProvider>
+              <AppThemeProvider>
+                <RootNavigation
+                  revealDone={revealDone}
+                  onRevealFinished={onRevealFinished}
+                  enforceAppLock={enforceAppLock}
+                />
+                <ShareDeepLinkHandler />
+                <AppDialogHost />
+              </AppThemeProvider>
+            </QueryProvider>
+          </KeyboardProvider>
+        </ScreenshotMode>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -30,7 +30,7 @@ Return ONLY valid JSON (no markdown fences):
 }
 
 Rules:
-- Include every distinct card product clearly listed with a name.
+- Extract ALL distinct card products clearly listed with a name — do NOT sample or stop early.
 - Prefer detail/product page URLs from [link:…] markers in the text when present.
 - detail_url must be an absolute http(s) URL when possible; if only a relative path appears, leave it as the path starting with / — the caller will resolve it.
 - Skip ads, EMI calculators, login, apply-now CTAs without a product name, and generic category pages.
@@ -38,7 +38,7 @@ Rules:
 - If bank is unclear, use the bank_hint from the user message when provided.
 - card_type defaults to the page default when the listing does not say debit/credit.
 - Deduplicate near-identical names on the same page (keep one).
-- Cap at 80 cards max for very long pages (prefer unique product pages).`;
+- Cap at 200 cards max only for extremely long aggregator pages; bank-direct listings must be exhaustive.`;
 
 function buildUserPrompt(source: DiscoverySource, pageText: string, pageUrl: string): string {
   const truncated = truncateForLlm(pageText, config.maxPromptChars);

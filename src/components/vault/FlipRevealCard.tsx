@@ -16,6 +16,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 import { CardFace, type BackActiveField } from './CardFace';
 import { CopyToast } from '@/components/ui/CopyToast';
 import {
@@ -47,6 +48,8 @@ interface FlipRevealCardProps {
   onRecoveryNeeded?: () => void;
   /** Opens lightweight name editor — front face only; never gates on biometrics. */
   onEditCardholderName?: () => void;
+  /** Opens share flow — front face top-right; never gates on biometrics. */
+  onShare?: () => void;
 }
 
 type SessionSecrets = { pan: string | null; cvv: string | null };
@@ -55,6 +58,7 @@ export function FlipRevealCard({
   card,
   onRecoveryNeeded,
   onEditCardholderName,
+  onShare,
 }: FlipRevealCardProps) {
   const reduced = useReducedMotion();
   const qc = useQueryClient();
@@ -379,6 +383,25 @@ export function FlipRevealCard({
                   }
                 : undefined
             }
+            topRightSlot={
+              onShare ? (
+                <Pressable
+                  onPress={() => {
+                    skipRevealRef.current = true;
+                    onShare();
+                    requestAnimationFrame(() => {
+                      skipRevealRef.current = false;
+                    });
+                  }}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel="Share this card"
+                  style={styles.shareBtn}
+                >
+                  <Ionicons name="share-outline" size={20} color="#FFFFFF" />
+                </Pressable>
+              ) : undefined
+            }
           />
         </Pressable>
       </Animated.View>
@@ -413,5 +436,13 @@ export function FlipRevealCard({
 const styles = StyleSheet.create({
   wrap: {
     width: '100%',
+  },
+  shareBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.28)',
   },
 });

@@ -1,16 +1,26 @@
 /**
- * VaultAddCardFab — bottom-right floating "Add card" CTA with label.
- * Thumb-friendly alternative to a header + button.
+ * VaultAddCardFab — circular indigo "+" above the tab bar.
+ * Subtle idle pulse + scale bump on press (respects reduce-motion).
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
-import { AppText } from '@/components/ui/AppText';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { radius, shadow, spacing } from '@/theme';
-import { useGradients, usePalette } from '@/providers/AppThemeProvider';
+import { usePalette } from '@/providers/AppThemeProvider';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
+const SIZE = 56;
 
 export function VaultAddCardFab({
   bottom,
@@ -20,29 +30,54 @@ export function VaultAddCardFab({
   onPress: () => void;
 }) {
   const palette = usePalette();
-  const gradients = useGradients();
+  const reduced = useReducedMotion();
+  const pulse = useSharedValue(1);
+  const press = useSharedValue(1);
+
+  useEffect(() => {
+    if (reduced) {
+      pulse.value = 1;
+      return;
+    }
+    pulse.value = withRepeat(
+      withSequence(
+        withTiming(1.06, { duration: 900, easing: Easing.inOut(Easing.quad) }),
+        withTiming(1, { duration: 900, easing: Easing.inOut(Easing.quad) }),
+      ),
+      -1,
+      false,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced]);
+
+  const wrapStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value * press.value }],
+  }));
+
   return (
-    <Pressable
-      onPress={() => {
-        Haptics.selectionAsync();
-        onPress();
-      }}
-      style={[styles.wrap, { bottom }]}
-      accessibilityRole="button"
-      accessibilityLabel="Add card"
-    >
-      <LinearGradient
-        colors={[...gradients.accent]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.fab}
+    <Animated.View style={[styles.wrap, { bottom }, wrapStyle]}>
+      <Pressable
+        onPressIn={() => {
+          press.value = reduced
+            ? withTiming(0.92, { duration: 80 })
+            : withSpring(0.9, { damping: 14, stiffness: 320 });
+        }}
+        onPressOut={() => {
+          press.value = reduced
+            ? withTiming(1, { duration: 120 })
+            : withSpring(1, { damping: 12, stiffness: 260 });
+        }}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          onPress();
+        }}
+        style={[styles.fab, { backgroundColor: palette.indigo }]}
+        accessibilityRole="button"
+        accessibilityLabel="Add card"
       >
-        <Ionicons name="add" size={22} color={palette.textOnAccent} />
-        <AppText variant="body" color={palette.textOnAccent}>
-          Add card
-        </AppText>
-      </LinearGradient>
-    </Pressable>
+        <Ionicons name="add" size={28} color={palette.textOnAccent} />
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -54,14 +89,12 @@ const styles = StyleSheet.create({
     ...shadow.accent,
   },
   fab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
+    width: SIZE,
+    height: SIZE,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.28)',
-    minHeight: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.22)',
   },
 });

@@ -13,6 +13,7 @@ export const AUTH_REASONS = {
   addCard: 'Sign in to add your first card',
   cardDetail: 'Sign in to view your cards',
   trackGmail: 'Sign in to connect Gmail',
+  trackTools: 'Sign in to use Track tools',
   admin: 'Sign in to continue',
   default: 'Sign in to continue',
 } as const;

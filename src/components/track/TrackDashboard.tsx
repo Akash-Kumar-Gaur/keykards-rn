@@ -29,7 +29,6 @@ import { StatementSummary } from '@/components/statement/StatementSummary';
 import { useLatestStatement } from '@/hooks/useStatementUpload';
 import { useTrackAccentBgStyle, useTrackTheme } from '@/components/track/TrackTheme';
 import { formatInr } from '@/lib/cardUtils';
-import { feePaybackPresentation } from '@/lib/feePayback';
 import { getCardTheme } from '@/lib/cardThemes';
 import type { TrackAccentPair } from '@/lib/trackAccent';
 import { radius, spacing, motion } from '@/theme';
@@ -101,10 +100,6 @@ function OverviewHero({
   const pointsSoon = snapshot.pointsExpiring
     .filter((p) => p.daysUntil >= 0 && p.daysUntil <= 90)
     .reduce((s, p) => s + p.pointsAmount, 0);
-  const benefitPotential = snapshot.feePayback.reduce(
-    (s, f) => s + f.benefitValueSum,
-    0,
-  );
   const milestonesActive = snapshot.milestones.filter(
     (m) => m.spent > 0 && m.progress < 1,
   ).length;
@@ -127,13 +122,6 @@ function OverviewHero({
       sub: 'expiring ≤90d',
       icon: 'hourglass-outline',
       tone: 'amber',
-    },
-    {
-      label: 'Benefit value',
-      value: benefitPotential > 0 ? formatInr(benefitPotential) : formatInr(0),
-      sub: 'potential, est.',
-      icon: 'wallet-outline',
-      tone: 'green',
     },
     {
       label: 'Milestones',
@@ -454,11 +442,12 @@ function RenewalsCarousel({
                   <AppText variant="title" numberOfLines={1}>
                     {r.renewalDate.slice(5) || r.renewalDate}
                   </AppText>
-                  <AppText variant="caption" color={palette.textSecondary}>
+                  <AppText
+                    variant="caption"
+                    color={r.isConfirmed ? palette.green : palette.amber}
+                  >
                     {r.daysUntil != null
-                      ? r.daysUntil >= 0
-                        ? `in ${r.daysUntil}d`
-                        : `${Math.abs(r.daysUntil)}d ago`
+                      ? `${r.daysUntil >= 0 ? `in ${r.daysUntil}d` : `${Math.abs(r.daysUntil)}d ago`} · ${r.isConfirmed ? 'Confirmed' : 'Estimated'}`
                       : r.isConfirmed
                         ? 'Confirmed'
                         : 'Estimated'}
@@ -491,7 +480,7 @@ function FeePaybackCarousel({
     <ScrollReveal>
       <View style={styles.section}>
         <CarouselHeader
-          title="Benefit value vs fee"
+          title="Annual fees"
           count={items.length}
           icon="wallet-outline"
           accent={accent}
@@ -499,11 +488,6 @@ function FeePaybackCarousel({
         {(
           <ItemRail single={single}>
             {items.map((f) => {
-              const payback = feePaybackPresentation(
-                f.annualFee,
-                f.benefitValueSum,
-                formatInr,
-              );
               const ring = ringColors(f.cardId, themeByCardId, accent, single);
               return (
                 <PressScale
@@ -518,37 +502,29 @@ function FeePaybackCarousel({
                     padding={spacing.md}
                   >
                     <View style={single ? styles.fullRow : styles.centeredCol}>
-                      <RadialProgress
-                        progress={payback.progress}
-                        size={single ? 88 : 72}
-                        strokeWidth={8}
-                        showUnlockPulse={false}
-                        color={ring.color}
-                        colorDeep={ring.colorDeep}
-                      >
-                        <AppText variant="caption" color={palette.textPrimary}>
-                          {payback.headline}
-                        </AppText>
-                      </RadialProgress>
+                      <IconBadge
+                        icon="wallet-outline"
+                        tone="indigo"
+                        size={single ? 36 : 28}
+                        accentColor={ring.color}
+                      />
                       <View style={single ? styles.fullMeta : undefined}>
                         {!single ? (
                           <AppText variant="small" numberOfLines={1}>
                             {f.cardNickname}
                           </AppText>
                         ) : null}
-                        <AppText
-                          variant="caption"
-                          color={palette.textSecondary}
-                          numberOfLines={1}
-                        >
-                          Value {formatInr(payback.benefitValue)}
+                        <AppText variant="title" numberOfLines={1}>
+                          {formatInr(f.annualFee)}
                         </AppText>
                         <AppText
                           variant="caption"
-                          color={palette.textTertiary}
-                          numberOfLines={1}
+                          color={palette.textSecondary}
+                          numberOfLines={2}
                         >
-                          Fee {formatInr(payback.safeFee)}
+                          {f.likelyWaiver
+                            ? f.advisoryCopy
+                            : 'Review listed benefits on the card'}
                         </AppText>
                       </View>
                     </View>
