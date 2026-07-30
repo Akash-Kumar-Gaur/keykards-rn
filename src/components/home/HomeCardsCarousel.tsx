@@ -3,22 +3,19 @@
  * Next card peeks from the right; no section header (layout matches reference).
  */
 
-import React from 'react';
+import { HomeCarouselCard } from '@/components/home/HomeCarouselCard';
+import { AppText } from '@/components/ui/AppText';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { usePalette } from '@/providers/AppThemeProvider';
+import { radius, spacing } from '@/theme';
+import type { VaultCard } from '@/types/card';
 import {
   ActivityIndicator,
-  Pressable,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
-  View,
+  View
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { AppText } from '@/components/ui/AppText';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { HomeCarouselCard } from '@/components/home/HomeCarouselCard';
-import { radius, spacing } from '@/theme';
-import { usePalette } from '@/providers/AppThemeProvider';
-import type { VaultCard } from '@/types/card';
 
 /** ~72% viewport so the next card peeks (~18–22% + gap). */
 const CARD_WIDTH_RATIO = 0.72;

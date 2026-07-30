@@ -3,6 +3,14 @@
  * No persistent text labels (a11y via accessibilityLabel).
  */
 
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useAttentionTransactions } from '@/hooks/useTransactions';
+import { usePalette } from '@/providers/AppThemeProvider';
+import { useAuthStore } from '@/stores/authStore';
+import { fontFamily, radius, spacing } from '@/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import * as Haptics from 'expo-haptics';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   LayoutChangeEvent,
@@ -12,25 +20,17 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { BlurView } from 'expo-blur';
-import * as Haptics from 'expo-haptics';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   Extrapolation,
-  SharedValue,
   interpolate,
+  SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { fontFamily, radius, spacing } from '@/theme';
-import { usePalette } from '@/providers/AppThemeProvider';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { useAuthStore } from '@/stores/authStore';
-import { useAttentionTransactions } from '@/hooks/useTransactions';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface FloatingTabBarProps {
   state: {

@@ -8,4 +8,4 @@
  * Flip to `false` and rebuild the Android binary to restore normal bars.
  * Delete this file + ScreenshotMode + withAndroidScreenshotMode when done.
  */
-export const SCREENSHOT_MODE = true;
+export const SCREENSHOT_MODE = false;

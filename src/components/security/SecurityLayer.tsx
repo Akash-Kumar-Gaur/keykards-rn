@@ -26,7 +26,7 @@ import { clearSensitiveData } from '@/stores/sensitiveStore';
 import { showDialog } from '@/stores/dialogStore';
 
 /** TEMP: flip to true before release (also re-enable plugins/withAndroidFlagSecure). */
-const SCREENSHOT_RESTRICTIONS_ENABLED = false;
+const SCREENSHOT_RESTRICTIONS_ENABLED = true;
 
 export function SecurityLayer({ children }: { children: React.ReactNode }) {
   const palette = usePalette();

@@ -15,7 +15,7 @@
 const { withMainActivity } = require('@expo/config-plugins');
 
 /** Flip to true before release. */
-const ENABLED = false;
+const ENABLED = true;
 
 const IMPORT_LINE = 'import android.view.WindowManager';
 const FLAG_SECURE_SNIPPET =
