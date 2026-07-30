@@ -32,7 +32,7 @@ export function AppLockGate({
 
   const minutes = Math.round(APP_LOCK_TIMEOUT_MS / 60_000);
   const unlockedCopy = INSTANT_APP_LOCK
-    ? 'Authenticate with biometrics or your device passcode. KeyKards locks the moment you leave the app.'
+    ? 'Authenticate with biometrics or your device passcode. InWallet locks the moment you leave the app.'
     : `Authenticate with biometrics or your device passcode. We only ask again after ${minutes} minutes in the background.`;
 
   return (
@@ -59,7 +59,7 @@ export function AppLockGate({
             >
               <Ionicons name="finger-print" size={40} color={palette.indigo} />
             </View>
-            <Eyebrow color={palette.indigo}>KeyKards</Eyebrow>
+            <Eyebrow color={palette.indigo}>InWallet</Eyebrow>
             <AppText variant="h2" style={styles.title}>
               Unlock to continue
             </AppText>

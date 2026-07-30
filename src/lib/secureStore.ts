@@ -10,18 +10,18 @@ import * as SecureStore from 'expo-secure-store';
 
 export const SECURE_KEYS = {
   /** Per-user AES-256-GCM data key (base64). Never leaves the device. */
-  dataKey: 'keykards.dataKey.v1',
+  dataKey: 'inwallet.dataKey.v1',
   /** Supabase session, persisted here instead of AsyncStorage. */
-  supabaseSession: 'keykards.supabase.session',
+  supabaseSession: 'inwallet.supabase.session',
   /** Whether the user has completed first-run setup. */
-  onboarded: 'keykards.onboarded',
+  onboarded: 'inwallet.onboarded',
   /**
    * Owner-only map of shareId → share key (base64url) for rebuilding `#k=`
    * links on this device. Never uploaded.
    */
-  shareLinkKeys: 'keykards.shareLinkKeys.v1',
+  shareLinkKeys: 'inwallet.shareLinkKeys.v1',
   /** Per-user map of dismissed "add your name" nudges (JSON object). */
-  nameNudgeDismissed: 'keykards.nameNudge.dismissed.v1',
+  nameNudgeDismissed: 'inwallet.nameNudge.dismissed.v1',
 } as const;
 
 const options: SecureStore.SecureStoreOptions = {

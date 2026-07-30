@@ -73,7 +73,7 @@ export function AnimatedSplashReveal({ onFinished }: AnimatedSplashRevealProps) 
         <Animated.View style={[styles.brand, logoStyle]}>
           <Eyebrow color={palette.indigo}>Your wallet, upgraded</Eyebrow>
           <AppText variant="display" style={styles.wordmark}>
-            KeyKards
+            InWallet
           </AppText>
         </Animated.View>
       </View>

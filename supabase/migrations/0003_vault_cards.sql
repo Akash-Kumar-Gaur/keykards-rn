@@ -1,4 +1,4 @@
--- KeyKards Phase 2 — Vault data model.
+-- InWallet Phase 2 — Vault data model.
 -- Extends public.cards with encrypted PAN/CVV + display metadata.
 -- Adds card_benefits and card_milestones (RLS via owning card's user_id).
 -- Never stores plaintext card_number or cvv outside *_encrypted columns.

@@ -1,4 +1,4 @@
--- KeyKards — pin search_path on every public function that was missing it
+-- InWallet — pin search_path on every public function that was missing it
 -- (or only had `public`) so the Supabase function_search_path_mutable lint
 -- stays clear. Preferred form: public, pg_temp.
 --

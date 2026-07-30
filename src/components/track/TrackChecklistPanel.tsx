@@ -317,7 +317,7 @@ export function TrackChecklistPanel({
         <GlassCard style={styles.optionalCard} padding={spacing.xl} elevation="raised">
           <AppText variant="title">Optional: automatic tracking</AppText>
           <AppText variant="caption" color={palette.textTertiary}>
-            Improves milestones and points — not required to use KeyKards.
+            Improves milestones and points — not required to use InWallet.
           </AppText>
           <View style={styles.pills}>
             <Pressable

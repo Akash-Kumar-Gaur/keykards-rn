@@ -1,5 +1,5 @@
 /**
- * Source registry — Benefit Radar base + KeyKards expansions (fintech / trending).
+ * Source registry — Benefit Radar base + InWallet expansions (fintech / trending).
  * Adjustments noted in README.
  */
 

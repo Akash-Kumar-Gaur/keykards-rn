@@ -59,7 +59,7 @@ export function SecurityLayer({ children }: { children: React.ReactNode }) {
       showDialog({
         title: 'Screenshot detected',
         message:
-          'For your security, avoid screenshots of card details. KeyKards cannot block screenshots on iOS, so keep any captures private.',
+          'For your security, avoid screenshots of card details. InWallet cannot block screenshots on iOS, so keep any captures private.',
         icon: 'camera-outline',
         tone: 'amber',
         actions: [{ label: 'Got it', variant: 'primary' }],
@@ -78,7 +78,7 @@ export function SecurityLayer({ children }: { children: React.ReactNode }) {
               <Ionicons name="lock-closed" size={28} color={palette.indigo} />
             </View>
             <AppText variant="title" style={styles.title}>
-              KeyKards is protected
+              InWallet is protected
             </AppText>
             <AppText variant="small" color={palette.textSecondary}>
               Content hidden while the app is in the background

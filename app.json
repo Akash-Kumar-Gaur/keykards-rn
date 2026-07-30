@@ -1,26 +1,26 @@
 {
   "expo": {
-    "name": "KeyKards",
-    "slug": "KeyKards",
+    "name": "InWallet",
+    "slug": "inwallet",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "keykards",
+    "scheme": "inwallet",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0A0A14",
     "ios": {
-      "bundleIdentifier": "com.keykards.app",
+      "bundleIdentifier": "com.inwallet.app",
       "icon": "./assets/images/icon.png",
       "supportsTablet": true,
       "infoPlist": {
-        "NSFaceIDUsageDescription": "KeyKards uses Face ID to unlock the app and protect your card details."
+        "NSFaceIDUsageDescription": "InWallet uses Face ID to unlock the app and protect your card details."
       },
       "associatedDomains": [
-        "applinks:keykards.redevolve.in"
+        "applinks:inwallet.redevolve.in"
       ]
     },
     "android": {
-      "package": "com.keykards.app",
+      "package": "com.inwallet.app",
       "icon": "./assets/images/android-icon.png",
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
@@ -42,11 +42,11 @@
           "data": [
             {
               "scheme": "https",
-              "host": "keykards.redevolve.in",
+              "host": "inwallet.redevolve.in",
               "pathPrefix": "/shared"
             },
             {
-              "scheme": "keykards",
+              "scheme": "inwallet",
               "host": "shared"
             }
           ],
@@ -77,14 +77,14 @@
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "KeyKards uses Face ID to unlock the app and protect your card details."
+          "faceIDPermission": "InWallet uses Face ID to unlock the app and protect your card details."
         }
       ],
       "react-native-quick-crypto",
       [
         "expo-camera",
         {
-          "cameraPermission": "KeyKards uses the camera to scan your card number and expiry on this device. Frames are processed locally and never uploaded.",
+          "cameraPermission": "InWallet uses the camera to scan your card number and expiry on this device. Frames are processed locally and never uploaded.",
           "recordAudioAndroid": false
         }
       ],

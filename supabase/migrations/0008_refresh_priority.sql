@@ -1,4 +1,4 @@
--- KeyKards — catalog re-scrape priority tier.
+-- InWallet — catalog re-scrape priority tier.
 -- high = fintech / app-first products (shorter refresh cycle); standard = legacy bank cards.
 
 alter table public.card_catalog

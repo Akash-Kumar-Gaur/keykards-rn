@@ -447,7 +447,7 @@ async function attemptCardRead(
       ok: false,
       reason: 'failed',
       message: isNoData
-        ? "This card connected but won't share number/expiry over NFC (common on Amex and some bank chips). If Android offers Wallet or another app, dismiss it and use Scan or Enter manually in KeyKards."
+        ? "This card connected but won't share number/expiry over NFC (common on Amex and some bank chips). If Android offers Wallet or another app, dismiss it and use Scan or Enter manually in InWallet."
         : "Couldn't read this card — try Scan or Enter manually.",
       debug: `attempt ${attempt}/${totalAttempts}: ${msg.slice(0, 100)}`,
     };

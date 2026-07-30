@@ -30,7 +30,7 @@ export async function getBiometricCapability(): Promise<BiometricCapability> {
  * `deviceFallback` allows the OS passcode when biometrics fail/unavailable.
  */
 export async function authenticate(
-  reason = 'Unlock KeyKards',
+  reason = 'Unlock InWallet',
 ): Promise<boolean> {
   try {
     const result = await LocalAuthentication.authenticateAsync({

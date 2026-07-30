@@ -157,7 +157,7 @@ export default function ProfileScreen() {
     const ok = await confirmDialog({
       title: 'Delete account permanently?',
       message:
-        'This permanently deletes your KeyKards account and all cloud data — cards, benefits, milestones, transactions, points, statement imports, Gmail link, recovery keys, and any active card shares (shares are revoked immediately).\n\nEncryption keys on this device are wiped. This cannot be undone.',
+        'This permanently deletes your InWallet account and all cloud data — cards, benefits, milestones, transactions, points, statement imports, Gmail link, recovery keys, and any active card shares (shares are revoked immediately).\n\nEncryption keys on this device are wiped. This cannot be undone.',
       icon: 'trash-outline',
       tone: 'danger',
       confirmLabel: 'Delete forever',

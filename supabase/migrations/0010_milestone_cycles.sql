@@ -1,4 +1,4 @@
--- KeyKards Phase 3+ — milestone cycle history + atomic reset helper.
+-- InWallet Phase 3+ — milestone cycle history + atomic reset helper.
 -- Archives the active card_milestones cycle before resetting spend/period.
 
 do $$ begin

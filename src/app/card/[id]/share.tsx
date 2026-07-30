@@ -103,7 +103,7 @@ export default function CreateShareScreen() {
     if (!created) return;
     try {
       await Share.share({
-        message: `I’m sharing a card with you via KeyKards (view-only, no CVV):\n${created.url}`,
+        message: `I’m sharing a card with you via InWallet (view-only, no CVV):\n${created.url}`,
         url: created.url,
         title: 'Share card link',
       });

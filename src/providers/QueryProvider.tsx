@@ -13,7 +13,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import type { Persister } from '@tanstack/react-query-persist-client';
 
-const PERSIST_KEY = 'keykards.rq.v1';
+const PERSIST_KEY = 'inwallet.rq.v1';
 /** Keep card rows on disk across cold starts (ms). */
 const CARD_GC_MS = 1000 * 60 * 60 * 24 * 14; // 14 days
 

@@ -1,5 +1,5 @@
 /**
- * Map LLM benefit categories → KeyKards card_benefits / catalog categories.
+ * Map LLM benefit categories → InWallet card_benefits / catalog categories.
  */
 
 import type { CatalogBenefitCategory, LlmBenefitCategory } from './types.js';

@@ -1,4 +1,4 @@
--- KeyKards — card_catalog reference data (shared, read-only for authenticated).
+-- InWallet — card_catalog reference data (shared, read-only for authenticated).
 -- Seed data (22 cards from Benefit Radar products.ts) applied via
 -- scripts/seed-batches/*.sql after this DDL. Regenerated from
 -- src/data/cardCatalogSeed.json via scripts/gen-seed-batches.cjs.

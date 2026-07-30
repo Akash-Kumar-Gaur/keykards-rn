@@ -1,4 +1,4 @@
--- KeyKards — card discovery queue (known_cards).
+-- InWallet — card discovery queue (known_cards).
 -- Separate from card_catalog: listing crawl finds candidates; extraction fills benefits.
 
 create table if not exists public.known_cards (

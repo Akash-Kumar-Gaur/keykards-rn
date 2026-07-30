@@ -34,7 +34,7 @@ export function Hero({
               {signedIn ? 'Your wallet, upgraded' : 'All your cards, secured'}
             </Eyebrow>
             <AppText variant="title" style={styles.appName}>
-              KeyKards
+              InWallet
             </AppText>
           </View>
         </AnimatedEntrance>

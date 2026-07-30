@@ -225,7 +225,7 @@ export default function CardStatementScreen() {
                     style={styles.passwordHint}
                   >
                     This is the PDF’s own password (often set by your bank — e.g.
-                    first letters of your name + date of birth), not your KeyKards
+                    first letters of your name + date of birth), not your InWallet
                     PIN. It’s used once to unlock the file and never saved.
                   </AppText>
                 </View>

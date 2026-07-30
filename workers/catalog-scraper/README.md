@@ -1,4 +1,4 @@
-# KeyKards catalog scraper (Railway)
+# InWallet catalog scraper (Railway)
 
 Scheduled Node/TypeScript worker that scrapes bank card benefit pages, structures
 them with an LLM, and upserts into Supabase `card_catalog` (high confidence only).

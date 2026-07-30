@@ -1,4 +1,4 @@
--- KeyKards — bank-inspired card color themes + catalog default_color_theme.
+-- InWallet — bank-inspired card color themes + catalog default_color_theme.
 
 -- ---------------------------------------------------------------------------
 -- Widen allowed theme keys on cards + card_catalog

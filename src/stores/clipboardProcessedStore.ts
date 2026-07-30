@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { logger } from '@/lib/logger';
 
-const STORAGE_KEY = 'keykards.lastProcessedClipboardHash';
+const STORAGE_KEY = 'inwallet.lastProcessedClipboardHash';
 
 /** Simple non-crypto string hash — fine for clipboard de-dupe. */
 export function hashClipboardText(text: string): string {

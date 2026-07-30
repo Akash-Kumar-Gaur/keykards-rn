@@ -221,9 +221,9 @@ Deno.serve(async (req) => {
     // Base path only — client appends `#k=…` locally. Never embed a key here.
     const base =
       Deno.env.get('SHARE_PUBLIC_BASE_URL')?.replace(/\/$/, '') ||
-      'https://keykards.redevolve.in';
+      'https://inwallet.redevolve.in';
     const url = `${base}/shared/${share.id}`;
-    const appUrl = `keykards://shared/${share.id}`;
+    const appUrl = `inwallet://shared/${share.id}`;
 
     return json({
       ok: true,

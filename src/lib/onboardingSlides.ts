@@ -43,6 +43,6 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
     eyebrow: 'Optional',
     headline: 'Connect only if you want automation',
     description:
-      'Clipboard, statements, and Gmail can track spend automatically — never required for KeyKards to be useful.',
+      'Clipboard, statements, and Gmail can track spend automatically — never required for InWallet to be useful.',
   },
 ];

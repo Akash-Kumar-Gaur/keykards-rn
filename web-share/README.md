@@ -1,6 +1,6 @@
-# KeyKards standalone share viewer
+# InWallet standalone share viewer
 
-Lightweight static page for `https://keykards.redevolve.in/shared/{share_id}`.
+Lightweight static page for `https://inwallet.redevolve.in/shared/{share_id}`.
 **Not** the Expo / React Native app — deploy this folder alongside the marketing
 site (or under `/shared`) and rewrite `/shared/*` → `index.html`.
 
@@ -13,7 +13,7 @@ site (or under `/shared`) and rewrite `/shared/*` → `index.html`.
 3. Deploy the folder so `/shared/:id` serves this viewer (SPA fallback / rewrite).
 4. Edge secrets already point here:
    ```bash
-   supabase secrets set SHARE_PUBLIC_BASE_URL=https://keykards.redevolve.in
+   supabase secrets set SHARE_PUBLIC_BASE_URL=https://inwallet.redevolve.in
    ```
 5. Apply migration `0016_card_shares.sql` if not already applied.
 

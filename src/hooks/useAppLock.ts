@@ -69,7 +69,7 @@ export function useAppLock(options: { enforce: boolean }) {
         return true;
       }
 
-      const ok = await authenticate('Unlock KeyKards');
+      const ok = await authenticate('Unlock InWallet');
       if (ok) {
         unlock();
         return true;

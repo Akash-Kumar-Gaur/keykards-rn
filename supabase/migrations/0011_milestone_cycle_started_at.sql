@@ -1,4 +1,4 @@
--- KeyKards — cycle cutoff so a reset ignores spend that was already archived.
+-- InWallet — cycle cutoff so a reset ignores spend that was already archived.
 --
 -- reset_card_milestones sets period_start = today. Transactions dated today
 -- therefore still fall inside the new window, so the live progress derivation

@@ -1,5 +1,5 @@
 /**
- * In-app "Shared with you" viewer — no KeyKards account required for the
+ * In-app "Shared with you" viewer — no InWallet account required for the
  * payload itself (fetched via public view-card-share). Ciphertext is decrypted
  * on-device with the key from the link fragment (via shareLinkKeyCache).
  * CVV is never shown.
@@ -127,11 +127,11 @@ export default function SharedWithYouScreen() {
         )}
 
         <Pressable
-          onPress={() => Linking.openURL('https://keykards.redevolve.in')}
+          onPress={() => Linking.openURL('https://inwallet.redevolve.in')}
           style={styles.footer}
         >
           <AppText variant="caption" color={palette.textTertiary}>
-            Shared securely via KeyKards
+            Shared securely via InWallet
           </AppText>
         </Pressable>
       </View>

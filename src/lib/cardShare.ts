@@ -98,7 +98,7 @@ export function isShareAccessible(
  */
 export function shareWebUrl(
   shareId: string,
-  base = process.env.EXPO_PUBLIC_SHARE_BASE_URL ?? 'https://keykards.redevolve.in',
+  base = process.env.EXPO_PUBLIC_SHARE_BASE_URL ?? 'https://inwallet.redevolve.in',
   keyB64Url?: string | null,
 ): string {
   const path = `${base.replace(/\/$/, '')}/shared/${shareId}`;
@@ -110,7 +110,7 @@ export function shareAppUrl(
   shareId: string,
   keyB64Url?: string | null,
 ): string {
-  const path = `keykards://shared/${shareId}`;
+  const path = `inwallet://shared/${shareId}`;
   return keyB64Url ? `${path}#k=${keyB64Url}` : path;
 }
 

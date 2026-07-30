@@ -6,7 +6,7 @@ import {
 } from '@/lib/themePreference';
 import { logger } from '@/lib/logger';
 
-const STORAGE_KEY = 'keykards.themeMode.v1';
+const STORAGE_KEY = 'inwallet.themeMode.v1';
 
 type ThemePreferenceState = {
   mode: ThemeMode;

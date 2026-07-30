@@ -27,7 +27,7 @@ function readScreenshotModeFlag() {
 
 const SCREENSHOT_MODE = readScreenshotModeFlag();
 
-const MARKER = 'KEYKARDS_SCREENSHOT_MODE';
+const MARKER = 'INWALLET_SCREENSHOT_MODE';
 
 const IMPORTS = [
   'import androidx.core.view.WindowCompat',

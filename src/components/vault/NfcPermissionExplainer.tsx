@@ -33,7 +33,7 @@ export function NfcPermissionExplainer({
         Read card with NFC
       </AppText>
       <AppText variant="body" color={palette.textSecondary} style={styles.body}>
-        KeyKards will use NFC on this phone to read the card’s chip. Card number and
+        InWallet will use NFC on this phone to read the card’s chip. Card number and
         expiry stay in memory until you save — nothing is uploaded during the read.
       </AppText>
 

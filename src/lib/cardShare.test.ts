@@ -75,37 +75,37 @@ describe('share URLs + parsing', () => {
   const key = 'abcdefghijklmnopqrstuvwxyz0123456789ABCD';
 
   it('builds web and app URLs without a key', () => {
-    expect(shareWebUrl(id, 'https://keykards.redevolve.in')).toBe(
-      `https://keykards.redevolve.in/shared/${id}`,
+    expect(shareWebUrl(id, 'https://inwallet.redevolve.in')).toBe(
+      `https://inwallet.redevolve.in/shared/${id}`,
     );
-    expect(shareAppUrl(id)).toBe(`keykards://shared/${id}`);
+    expect(shareAppUrl(id)).toBe(`inwallet://shared/${id}`);
   });
 
   it('embeds the share key only in the URL fragment', () => {
-    expect(shareWebUrl(id, 'https://keykards.redevolve.in', key)).toBe(
-      `https://keykards.redevolve.in/shared/${id}#k=${key}`,
+    expect(shareWebUrl(id, 'https://inwallet.redevolve.in', key)).toBe(
+      `https://inwallet.redevolve.in/shared/${id}#k=${key}`,
     );
-    expect(shareAppUrl(id, key)).toBe(`keykards://shared/${id}#k=${key}`);
+    expect(shareAppUrl(id, key)).toBe(`inwallet://shared/${id}#k=${key}`);
   });
 
   it('parses share ids from https and custom-scheme links', () => {
-    expect(parseShareIdFromUrl(`https://keykards.redevolve.in/shared/${id}`)).toBe(id);
-    expect(parseShareIdFromUrl(`keykards://shared/${id}`)).toBe(id);
-    expect(parseShareIdFromUrl(`https://keykards.redevolve.in/shared/${id}?x=1`)).toBe(
+    expect(parseShareIdFromUrl(`https://inwallet.redevolve.in/shared/${id}`)).toBe(id);
+    expect(parseShareIdFromUrl(`inwallet://shared/${id}`)).toBe(id);
+    expect(parseShareIdFromUrl(`https://inwallet.redevolve.in/shared/${id}?x=1`)).toBe(
       id,
     );
     expect(
-      parseShareIdFromUrl(`https://keykards.redevolve.in/shared/${id}#k=${key}`),
+      parseShareIdFromUrl(`https://inwallet.redevolve.in/shared/${id}#k=${key}`),
     ).toBe(id);
-    expect(parseShareIdFromUrl('https://keykards.redevolve.in/vault')).toBeNull();
+    expect(parseShareIdFromUrl('https://inwallet.redevolve.in/vault')).toBeNull();
   });
 
   it('parses the fragment key without requiring a server round-trip', () => {
     expect(
-      parseShareKeyFromUrl(`https://keykards.redevolve.in/shared/${id}#k=${key}`),
+      parseShareKeyFromUrl(`https://inwallet.redevolve.in/shared/${id}#k=${key}`),
     ).toBe(key);
-    expect(parseShareKeyFromUrl(`keykards://shared/${id}#k=${key}`)).toBe(key);
-    expect(parseShareKeyFromUrl(`https://keykards.redevolve.in/shared/${id}`)).toBeNull();
+    expect(parseShareKeyFromUrl(`inwallet://shared/${id}#k=${key}`)).toBe(key);
+    expect(parseShareKeyFromUrl(`https://inwallet.redevolve.in/shared/${id}`)).toBeNull();
   });
 });
 

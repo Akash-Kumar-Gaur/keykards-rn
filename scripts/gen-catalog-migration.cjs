@@ -16,7 +16,7 @@ const rows = seed
   })
   .join(',\n');
 
-const ddl = `-- KeyKards — card_catalog reference data (shared, read-only for authenticated).
+const ddl = `-- InWallet — card_catalog reference data (shared, read-only for authenticated).
 -- Seeded from Benefit Radar / modern-react-app products.ts (credit + debit cards).
 
 create table if not exists public.card_catalog (

@@ -1,4 +1,4 @@
-# KeyKards
+# InWallet
 
 Card-intelligence app for India. Know which card to swipe next.
 
@@ -22,7 +22,7 @@ later phases. Everything on Home today is placeholder / mock data.
 ## Getting started
 
 ```bash
-cd KeyKards
+cd keykards-rn
 npm install
 cp .env.example .env
 # Fill EXPO_PUBLIC_SUPABASE_URL + EXPO_PUBLIC_SUPABASE_ANON_KEY
@@ -30,7 +30,7 @@ cp .env.example .env
 
 ### Development build (required)
 
-KeyKards needs a **custom dev client** — Expo Go is not enough (FLAG_SECURE,
+InWallet needs a **custom dev client** — Expo Go is not enough (FLAG_SECURE,
 `react-native-quick-crypto`, SecureStore-backed crypto).
 
 1. Build the Android APK on EAS (you're on Windows; iOS needs a Mac or EAS iOS):
@@ -49,7 +49,7 @@ npm start
 # = expo start --dev-client
 ```
 
-4. Open the KeyKards app on the device — it will connect to Metro.
+4. Open the InWallet app on the device — it will connect to Metro.
 
 Local native alternative (needs Android Studio / Xcode):
 

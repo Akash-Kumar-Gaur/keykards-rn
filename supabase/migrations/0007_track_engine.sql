@@ -1,4 +1,4 @@
--- KeyKards Phase 3 — Track engine.
+-- InWallet Phase 3 — Track engine.
 -- transactions + points_ledger (RLS from day one), catalog policy fields,
 -- card renewal fields, gmail connection metadata, raw_text retention purge.
 

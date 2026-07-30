@@ -74,7 +74,7 @@ export function TiltCard() {
           </Animated.View>
         ) : null}
         <View style={styles.chip} />
-        <Eyebrow color="rgba(255,255,255,0.7)">KeyKards</Eyebrow>
+        <Eyebrow color="rgba(255,255,255,0.7)">InWallet</Eyebrow>
         <AppText variant="title" color="#FFFFFF" style={styles.name}>
           Your wallet
         </AppText>

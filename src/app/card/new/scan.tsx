@@ -290,7 +290,7 @@ export default function ScanNewCardScreen() {
                   color={palette.textSecondary}
                   style={styles.center}
                 >
-                  KeyKards needs the camera to read your card on this device.
+                  InWallet needs the camera to read your card on this device.
                 </AppText>
                 <PillButton
                   label="Allow camera"

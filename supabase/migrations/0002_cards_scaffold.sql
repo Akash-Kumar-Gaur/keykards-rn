@@ -1,4 +1,4 @@
--- KeyKards — cards table (Phase 1 scaffold for authenticated Home queries).
+-- InWallet — cards table (Phase 1 scaffold for authenticated Home queries).
 --
 -- SECURITY: RLS enabled on first migration, scoped to auth.uid() = user_id.
 -- Card PAN/CVV fields are intentionally NOT here — those arrive encrypted in

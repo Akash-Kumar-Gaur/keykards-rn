@@ -8,7 +8,7 @@
  *   - 'last_four_only' → show last 4 directly, no key / ciphertext needed
  */
 (function () {
-  const cfg = window.KEYKARDS_SHARE || {};
+  const cfg = window.INWALLET_SHARE || {};
   const statusEl = document.getElementById('status');
   const cardEl = document.getElementById('card');
   const expiresEl = document.getElementById('expires');

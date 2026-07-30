@@ -31,7 +31,7 @@ describe('shareCrypto E2E', () => {
   it('puts the key only in the fragment of the share URL', async () => {
     const { keyB64Url } = await encryptPanForShare('4111111111111111');
     const id = 'a1b2c3d4-e5f6-4789-a012-3456789abcde';
-    const url = shareWebUrl(id, 'https://keykards.redevolve.in', keyB64Url);
+    const url = shareWebUrl(id, 'https://inwallet.redevolve.in', keyB64Url);
     expect(url).toContain(`#k=${keyB64Url}`);
     expect(url.indexOf('#')).toBeGreaterThan(url.indexOf(id));
     // Path/query must not contain the key.

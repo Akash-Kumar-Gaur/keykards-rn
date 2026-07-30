@@ -1,5 +1,5 @@
 /**
- * KeyKards color tokens — dark + light palettes with identical keys.
+ * InWallet color tokens — dark + light palettes with identical keys.
  *
  * Payment-card faces keep their own metallic presets (cardThemes.ts) in both
  * modes. These tokens drive app chrome: backgrounds, glass, text, nav, glow.
@@ -61,7 +61,7 @@ export type AppPalette = {
   };
 };
 
-/** Dark — near-black navy base (existing KeyKards identity). */
+/** Dark — near-black navy base (existing InWallet identity). */
 export const darkPalette: AppPalette = {
   navy950: '#0A0A14',
   navy900: '#0E0E1C',

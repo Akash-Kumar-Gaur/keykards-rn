@@ -242,7 +242,7 @@ export function FlipRevealCard({
         showDialog({
           title: 'Can’t unlock card numbers',
           message:
-            'This version of KeyKards can’t unlock saved card numbers. Please update or reinstall the app, then try again.',
+            'This version of InWallet can’t unlock saved card numbers. Please update or reinstall the app, then try again.',
           icon: 'construct-outline',
           tone: 'amber',
           actions: [{ label: 'Got it', variant: 'primary' }],

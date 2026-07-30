@@ -4,7 +4,7 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 
 # Display principle — facts only
 
-KeyKards is a **secure card vault**, not an analytics or estimation product.
+InWallet is a **secure card vault**, not an analytics or estimation product.
 
 Show **facts**:
 - What the user entered

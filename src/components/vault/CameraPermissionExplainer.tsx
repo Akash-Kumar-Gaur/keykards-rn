@@ -32,7 +32,7 @@ export function CameraPermissionExplainer({
         Scan your card
       </AppText>
       <AppText variant="body" color={palette.textSecondary} style={styles.body}>
-        KeyKards will use the camera to read the card number, expiry, and name
+        InWallet will use the camera to read the card number, expiry, and name
         on this device. Frames are processed locally and discarded — nothing is
         uploaded.
       </AppText>

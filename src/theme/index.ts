@@ -1,5 +1,5 @@
 /**
- * KeyKards theme.
+ * InWallet theme.
  *
  * Central design-system export. Chrome colors: prefer `usePalette()` from
  * AppThemeProvider so Light/Dark swap. Static `palette` remains the dark set

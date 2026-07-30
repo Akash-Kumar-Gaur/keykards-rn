@@ -1,4 +1,4 @@
--- KeyKards — initial schema: profiles.
+-- InWallet — initial schema: profiles.
 --
 -- SECURITY: Row Level Security is enabled on this table from its FIRST
 -- migration (never bolted on retroactively). Every policy is scoped to the

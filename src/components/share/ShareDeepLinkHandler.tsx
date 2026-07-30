@@ -1,5 +1,5 @@
 /**
- * Opens keykards://shared/{id}#k=… (and https …/shared/{id}#k=…) into the
+ * Opens inwallet://shared/{id}#k=… (and https …/shared/{id}#k=…) into the
  * in-app viewer. The fragment key is cached in memory (never in the route).
  */
 

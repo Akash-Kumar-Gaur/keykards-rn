@@ -1,4 +1,4 @@
--- KeyKards — catalog scrape pipeline schema.
+-- InWallet — catalog scrape pipeline schema.
 -- Extends card_catalog for auto/manual provenance; adds catalog_scrape_log.
 
 alter table public.card_catalog

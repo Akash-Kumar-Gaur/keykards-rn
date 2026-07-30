@@ -1,7 +1,7 @@
 /**
  * resolve-card-share — public, unauthenticated share viewer.
  *
- * Alias slug for the website resolver (the hosted keykards.redevolve.in site
+ * Alias slug for the website resolver (the hosted inwallet.redevolve.in site
  * calls this name). Shares the exact same logic as view-card-share so both
  * names resolve identically.
  *
