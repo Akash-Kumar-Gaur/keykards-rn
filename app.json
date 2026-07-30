@@ -8,6 +8,12 @@
     "scheme": "inwallet",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0A0A14",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/cdde3dcc-ce4a-4e3a-bee3-b01a6d9c4902"
+    },
     "ios": {
       "bundleIdentifier": "in.redevolve.inwallet",
       "icon": "./assets/images/icon.png",
@@ -15,9 +21,7 @@
       "infoPlist": {
         "NSFaceIDUsageDescription": "InWallet uses Face ID to unlock the app and protect your card details."
       },
-      "associatedDomains": [
-        "applinks:inwallet.redevolve.in"
-      ]
+      "associatedDomains": ["applinks:inwallet.redevolve.in"]
     },
     "android": {
       "package": "in.redevolve.inwallet",
@@ -51,10 +55,7 @@
               "host": "shared"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
@@ -95,6 +96,7 @@
           "iosEngine": "vision"
         }
       ],
+      "expo-updates",
       "./plugins/withAndroidFlagSecure",
       "./plugins/withAndroidScreenshotMode",
       "./plugins/withAndroidNfc",
