@@ -1,5 +1,5 @@
 /**
- * Ephemeral Add-Card capture store — holds PAN/expiry from NFC (or future scan)
+ * Ephemeral Add-Card capture store — holds PAN/expiry from NFC or camera OCR
  * in memory only until the form consumes it. Never persisted, never logged.
  */
 
@@ -17,8 +17,8 @@ export interface CardCapturePayload {
   /** Visa / Mastercard / RuPay / … from AID when known. */
   networkHint: string | null;
   /**
-   * Name printed on the card when OCR/NFC extracts it (optional).
-   * Camera OCR is not shipped yet — reserved for the scan flow.
+   * Name printed on the card when OCR extracts it (optional).
+   * NFC rarely provides this; camera OCR may.
    */
   cardholderName: string | null;
   source: CardCaptureSource;

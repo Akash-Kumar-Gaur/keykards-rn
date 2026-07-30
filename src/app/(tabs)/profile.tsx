@@ -8,7 +8,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, type Href } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -33,7 +33,11 @@ import { useAppTheme } from '@/providers/AppThemeProvider';
 import { confirmDialog, showDialog } from '@/stores/dialogStore';
 import { deleteAccountRemote } from '@/lib/accountDeletion';
 import { resolveDisplayName } from '@/lib/displayName';
-import { SUPPORT_EMAIL } from '@/lib/support';
+import {
+  PRIVACY_POLICY_URL,
+  SUPPORT_EMAIL,
+  TERMS_URL,
+} from '@/lib/support';
 import { logger } from '@/lib/logger';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useProfile } from '@/hooks/useProfile';
@@ -323,6 +327,34 @@ export default function ProfileScreen() {
           </AnimatedEntrance>
         )}
 
+        <AnimatedEntrance delay={260}>
+          <View style={styles.legalRow}>
+            <Pressable
+              onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
+              hitSlop={8}
+              accessibilityRole="link"
+              accessibilityLabel="Privacy Policy"
+            >
+              <AppText variant="caption" color={palette.indigo}>
+                Privacy Policy
+              </AppText>
+            </Pressable>
+            <AppText variant="caption" color={palette.textTertiary}>
+              ·
+            </AppText>
+            <Pressable
+              onPress={() => void Linking.openURL(TERMS_URL)}
+              hitSlop={8}
+              accessibilityRole="link"
+              accessibilityLabel="Terms of Service"
+            >
+              <AppText variant="caption" color={palette.indigo}>
+                Terms
+              </AppText>
+            </Pressable>
+          </View>
+        </AnimatedEntrance>
+
         {user ? (
           <>
             <AnimatedEntrance delay={280} style={styles.actions}>
@@ -429,6 +461,13 @@ const styles = StyleSheet.create({
   systemLink: {
     paddingHorizontal: 2,
     marginTop: -spacing.xs,
+  },
+  legalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    paddingHorizontal: 2,
   },
   actions: { marginTop: spacing.sm },
   signOutBtn: {

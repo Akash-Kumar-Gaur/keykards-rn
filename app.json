@@ -15,7 +15,9 @@
       "infoPlist": {
         "NSFaceIDUsageDescription": "KeyKards uses Face ID to unlock the app and protect your card details."
       },
-      "associatedDomains": ["applinks:keykards.redevolve.in"]
+      "associatedDomains": [
+        "applinks:keykards.redevolve.in"
+      ]
     },
     "android": {
       "package": "com.keykards.app",
@@ -48,7 +50,10 @@
               "host": "shared"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -76,10 +81,30 @@
         }
       ],
       "react-native-quick-crypto",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "KeyKards uses the camera to scan your card number and expiry on this device. Frames are processed locally and never uploaded.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-mlkit-ocr",
+        {
+          "iosEngine": "vision"
+        }
+      ],
       "./plugins/withAndroidFlagSecure",
       "./plugins/withAndroidScreenshotMode",
       "./plugins/withAndroidNfc",
-      "expo-build-properties"
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.0"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

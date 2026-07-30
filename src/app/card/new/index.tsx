@@ -30,7 +30,7 @@ const METHODS: Method[] = [
   {
     id: 'scan',
     title: 'Scan card',
-    subtitle: 'Scan the card number and expiry on this device',
+    subtitle: 'On-device OCR — number, expiry, and name stay on this phone',
     icon: 'scan-outline',
     href: '/card/new/scan' as Href,
   },

@@ -66,8 +66,8 @@ interface CardFormProps {
   scannedExpiryYear?: number | null;
   scannedNetwork?: CardNetwork | null;
   /**
-   * Prefill for Name on card (future OCR / NFC). When set, triggers the same
-   * highlight treatment as other scanned fields. Camera OCR is not shipped yet.
+   * Prefill for Name on card (OCR / NFC). When set, triggers the same
+   * highlight treatment as other scanned fields.
    */
   scannedCardholderName?: string | null;
   /** Editable default suggestion (e.g. profile display name) for create mode. */
