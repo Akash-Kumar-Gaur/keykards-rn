@@ -8,7 +8,7 @@ import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppText, Eyebrow } from '@/components/ui/AppText';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { PillButton } from '@/components/ui/PillButton';
+import { ExplainerContinueActions } from '@/components/vault/ExplainerContinueActions';
 import { spacing } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
 
@@ -46,19 +46,11 @@ export function CameraPermissionExplainer({
         <Row icon="shield-checkmark-outline" text="CVV is never scanned — enter it only if you need it" />
       </GlassCard>
 
-      <PillButton
-        label="Continue"
-        icon="arrow-forward"
-        size="lg"
-        fullWidth
-        onPress={onContinue}
-      />
-      <PillButton
-        label="Enter manually instead"
-        variant="ghost"
-        size="lg"
-        fullWidth
-        onPress={onCancel}
+      <ExplainerContinueActions
+        kind="scan"
+        onContinue={onContinue}
+        onCancel={onCancel}
+        cancelLabel="Enter manually instead"
       />
     </View>
   );

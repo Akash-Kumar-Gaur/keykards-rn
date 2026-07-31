@@ -19,9 +19,13 @@
       "icon": "./assets/images/icon.png",
       "supportsTablet": true,
       "infoPlist": {
-        "NSFaceIDUsageDescription": "InWallet uses Face ID to unlock the app and protect your card details."
+        "NSFaceIDUsageDescription": "InWallet uses Face ID to unlock the app and protect your card details.",
+        "ITSAppUsesNonExemptEncryption": false
       },
-      "associatedDomains": ["applinks:inwallet.redevolve.in"]
+      "associatedDomains": [
+        "applinks:inwallet.redevolve.in",
+        "applinks:inwallet.redevolve.in"
+      ]
     },
     "android": {
       "package": "in.redevolve.inwallet",
@@ -55,7 +59,10 @@
               "host": "shared"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },

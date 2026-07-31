@@ -31,6 +31,7 @@ import { AppLockGate } from '@/components/security/AppLockGate';
 import { ScreenshotMode } from '@/components/screenshot/ScreenshotMode';
 import { AnimatedSplashReveal } from '@/components/splash/AnimatedSplashReveal';
 import { AppDialogHost } from '@/components/ui/AppDialog';
+import { CardMorphOverlay } from '@/components/vault/CardMorphOverlay';
 import { ShareDeepLinkHandler } from '@/components/share/ShareDeepLinkHandler';
 import { useAuthStore } from '@/stores/authStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
@@ -55,27 +56,37 @@ function RootNavigation({
         {!revealDone ? (
           <AnimatedSplashReveal onFinished={onRevealFinished} />
         ) : (
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: palette.navy950 },
-            }}
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="card" />
-            <Stack.Screen name="track" />
-            <Stack.Screen
-              name="shared/[id]"
-              options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
-            />
-            <Stack.Screen name="admin" />
-            <Stack.Screen
-              name="sign-in"
-              options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-            />
-          </Stack>
+          <>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: palette.navy950 },
+              }}
+            >
+              <Stack.Screen name="index" />
+              <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="card" />
+              <Stack.Screen name="track" />
+              <Stack.Screen
+                name="shared/[id]"
+                options={{
+                  animation: 'slide_from_bottom',
+                  presentation: 'modal',
+                }}
+              />
+              <Stack.Screen name="admin" />
+              <Stack.Screen
+                name="sign-in"
+                options={{
+                  presentation: 'modal',
+                  animation: 'slide_from_bottom',
+                }}
+              />
+            </Stack>
+            {/* Above the navigator so a card can survive the screen swap. */}
+            <CardMorphOverlay />
+          </>
         )}
       </AppLockGate>
     </SecurityLayer>

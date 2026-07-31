@@ -19,13 +19,33 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 const ASPECT = 1.586; // ISO/IEC 7810 ID-1
 const DIM = 'rgba(4, 6, 18, 0.62)';
 
+export type ScanFrameRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+/**
+ * Geometry of the card cutout. Exported so the success reveal can materialise
+ * the card in exactly the rect the user was aiming at.
+ */
+export function scanFrameRect(winW: number, winH: number): ScanFrameRect {
+  const width = Math.min(winW - spacing.xl * 2, 340);
+  const height = width / ASPECT;
+  return {
+    x: (winW - width) / 2,
+    y: Math.max((winH - height) / 2 - 40, 100),
+    width,
+    height,
+  };
+}
+
 export function CardScanOverlay({ status }: { status: string }) {
   const palette = usePalette();
   const reduced = useReducedMotion();
   const { width: winW, height: winH } = useWindowDimensions();
-  const frameW = Math.min(winW - spacing.xl * 2, 340);
-  const frameH = frameW / ASPECT;
-  const topPad = Math.max((winH - frameH) / 2 - 40, 100);
+  const { width: frameW, height: frameH, y: topPad } = scanFrameRect(winW, winH);
 
   const lineY = useSharedValue(0);
 

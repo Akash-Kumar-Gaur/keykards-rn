@@ -49,6 +49,66 @@ describe('cardOcrParse', () => {
     expect(extractCardholderName('VISA\nMASTERCARD')).toBeNull();
   });
 
+  describe('cardholder name on cards with no printed name', () => {
+    it('rejects usage boilerplate', () => {
+      expect(extractCardholderName('ELECTRONIC USE ONLY')).toBeNull();
+      expect(extractCardholderName('FOR ELECTRONIC USE ONLY')).toBeNull();
+      expect(extractCardholderName('VALID ONLY IN INDIA')).toBeNull();
+      expect(extractCardholderName('AUTHORISED SIGNATURE')).toBeNull();
+      expect(extractCardholderName('NOT TRANSFERABLE')).toBeNull();
+      expect(extractCardholderName('CUSTOMER CARE')).toBeNull();
+    });
+
+    it('rejects company names and suffixes', () => {
+      expect(extractCardholderName('REDEVOLVE TECHNOLOGIES')).toBeNull();
+      expect(extractCardholderName('REDEVOLVE PVT LTD')).toBeNull();
+      expect(extractCardholderName('ACME SOLUTIONS LIMITED')).toBeNull();
+    });
+
+    it('rejects product tiers', () => {
+      expect(extractCardholderName('WORLD ELITE')).toBeNull();
+      expect(extractCardholderName('BUSINESS PRIME')).toBeNull();
+      expect(extractCardholderName('CONTACTLESS ENABLED')).toBeNull();
+    });
+
+    it('rejects a single word, initials-only and OCR noise', () => {
+      expect(extractCardholderName('REDEVOLVE')).toBeNull();
+      expect(extractCardholderName('A B')).toBeNull();
+      expect(extractCardholderName('XZQW MNBV')).toBeNull();
+    });
+
+    it('rejects lines carrying digits', () => {
+      expect(extractCardholderName('CALL 18001234567')).toBeNull();
+      expect(extractCardholderName('MEMBER SINCE 09')).toBeNull();
+    });
+
+    it('yields no name for a full card face without one', () => {
+      const text = [
+        'HDFC BANK',
+        '4111 1111 1111 1111',
+        'VALID THRU 09/29',
+        'ELECTRONIC USE ONLY',
+      ].join('\n');
+      expect(parseCardOcrText(text)?.cardholderName).toBeNull();
+    });
+
+    it('still reads a real name printed below boilerplate', () => {
+      const text = [
+        'HDFC BANK',
+        '4111 1111 1111 1111',
+        'VALID THRU 09/29',
+        'ELECTRONIC USE ONLY',
+        'ASHA MENON',
+      ].join('\n');
+      expect(parseCardOcrText(text)?.cardholderName).toBe('Asha Menon');
+    });
+
+    it('keeps names that use an initial', () => {
+      expect(extractCardholderName('A KUMAR')).toBe('A Kumar');
+      expect(extractCardholderName('RAJESH K NAIR')).toBe('Rajesh K Nair');
+    });
+  });
+
   it('returns null when no PAN', () => {
     expect(parseCardOcrText('hello world\n12/28')).toBeNull();
   });

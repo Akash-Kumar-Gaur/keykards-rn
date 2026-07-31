@@ -26,11 +26,13 @@ import {
   signatureFromCapture,
   useDuplicateCardGuard,
 } from '@/hooks/useDuplicateCardGuard';
+import { getSkipCaptureExplainer } from '@/lib/captureExplainerPrefs';
 import { logger } from '@/lib/logger';
 import { spacing } from '@/theme';
 import { usePalette } from '@/providers/AppThemeProvider';
 
 type Phase =
+  | 'boot'
   | 'ios_stub'
   | 'explainer'
   | 'listening'
@@ -47,31 +49,17 @@ export default function NfcNewCardScreen() {
   const { warnIfDuplicate } = useDuplicateCardGuard(userId);
   const setCapture = useCardCaptureStore((s) => s.setCapture);
   const [phase, setPhase] = useState<Phase>(
-    Platform.OS === 'ios' ? 'ios_stub' : 'explainer',
+    Platform.OS === 'ios' ? 'ios_stub' : 'boot',
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [partialNotice, setPartialNotice] = useState<string | null>(null);
   const [statusNote, setStatusNote] = useState<string | null>(null);
-  const [debugLine, setDebugLine] = useState<string | null>(null);
   const reading = useRef(false);
   /** Bumped on cancel / unmount so a stale read can't overwrite the phase. */
   const readSeq = useRef(0);
-
-  // Probe NFC as soon as the screen opens so Metro shows status before Continue.
-  useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    let cancelled = false;
-    (async () => {
-      logger.info('[NFC UI] screen mount — probing status');
-      const status = await getNfcStatus();
-      if (cancelled) return;
-      setDebugLine(`preflight: ${status}`);
-      logger.info('[NFC UI] preflight status', { status });
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  /** True when the user chose "Don't show again" on the privacy explainer. */
+  const skipExplainerRef = useRef(false);
+  const startReadRef = useRef<() => Promise<void>>(async () => undefined);
 
   const goManual = useCallback(() => {
     router.replace('/card/new/manual' as Href);
@@ -105,7 +93,6 @@ export default function NfcNewCardScreen() {
           setPartialNotice(null);
           setErrorMessage(null);
           setStatusNote(null);
-          setDebugLine('duplicate — capture discarded');
           setPhase('duplicate');
           return;
         }
@@ -125,13 +112,11 @@ export default function NfcNewCardScreen() {
     setPhase('listening');
     setErrorMessage(null);
     setStatusNote(null);
-    setDebugLine('starting…');
     logger.info('[NFC UI] startRead', { seq });
 
     const status = await getNfcStatus();
     if (!isCurrent()) return;
     logger.info('[NFC UI] status before read', { status });
-    setDebugLine(`status: ${status}`);
 
     if (status === 'disabled') {
       setErrorMessage('NFC is turned off. Enable it in system settings, then try again.');
@@ -143,13 +128,11 @@ export default function NfcNewCardScreen() {
       setErrorMessage(
         'Tap to read isn’t available in this install. Try Scan or Enter manually.',
       );
-      setDebugLine('unavailable — native module or hardware missing');
       setPhase('error');
       reading.current = false;
       return;
     }
 
-    setDebugLine('waiting for IsoDep tag (no runtime permission dialog on Android)…');
     logger.info(
       '[NFC UI] Note: Android NFC has no runtime permission prompt — listening for tag now',
     );
@@ -160,7 +143,7 @@ export default function NfcNewCardScreen() {
         if (!isCurrent()) return;
         if (attempt === 1) return;
         setStatusNote('Hold steady — still reading…');
-        setDebugLine(`retrying read (attempt ${attempt}/${totalAttempts})`);
+        logger.info('[NFC UI] retrying read', { attempt, totalAttempts });
       },
       shouldContinue: isCurrent,
     });
@@ -178,16 +161,16 @@ export default function NfcNewCardScreen() {
 
     if (!outcome.ok) {
       setErrorMessage(outcome.message);
-      setDebugLine(outcome.debug ?? outcome.reason);
       setPhase('error');
       return;
     }
 
     const { result } = outcome;
     const isPartial = result.pan.quality !== 'full';
-    setDebugLine(
-      `ok panQuality=${result.pan.quality} scheme=${result.schemeHint ?? '—'}`,
-    );
+    logger.info('[NFC UI] read ok', {
+      panQuality: result.pan.quality,
+      scheme: result.schemeHint ?? null,
+    });
 
     const notice = isPartial
       ? 'Your bank only shares partial card details this way — please complete the rest manually.'
@@ -211,6 +194,33 @@ export default function NfcNewCardScreen() {
       setPhase('success');
     }
   }, [setCapture]);
+
+  useEffect(() => {
+    startReadRef.current = startRead;
+  }, [startRead]);
+
+  // Resolve "don't show again", probe NFC for logs only — never surface status in UI.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    let cancelled = false;
+    (async () => {
+      const skip = await getSkipCaptureExplainer('nfc');
+      if (cancelled) return;
+      skipExplainerRef.current = skip;
+      logger.info('[NFC UI] screen mount', { skipExplainer: skip });
+      void getNfcStatus().then((status) => {
+        logger.info('[NFC UI] preflight status', { status });
+      });
+      if (skip) {
+        void startReadRef.current();
+      } else {
+        setPhase('explainer');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Cancel in-flight NFC if user leaves.
   useEffect(() => {
@@ -253,16 +263,6 @@ export default function NfcNewCardScreen() {
               onContinue={startRead}
               onCancel={() => router.back()}
             />
-            {__DEV__ && debugLine ? (
-              <AppText variant="caption" color={palette.textTertiary} style={styles.debug}>
-                {debugLine}
-              </AppText>
-            ) : null}
-            {__DEV__ ? (
-              <AppText variant="caption" color={palette.textTertiary} style={styles.debug}>
-                Tip: Android NFC has no permission popup — watch Metro for [NFC] logs.
-              </AppText>
-            ) : null}
           </View>
         ) : null}
 
@@ -289,11 +289,6 @@ export default function NfcNewCardScreen() {
                 Listening for ~25 seconds
               </AppText>
             )}
-            {__DEV__ && debugLine ? (
-              <AppText variant="caption" color={palette.amber} style={styles.debug}>
-                {debugLine}
-              </AppText>
-            ) : null}
             <PillButton
               label="Cancel"
               variant="ghost"
@@ -306,7 +301,11 @@ export default function NfcNewCardScreen() {
                 import('react-native-nfc-manager')
                   .then((m) => m.default.cancelTechnologyRequest())
                   .catch(() => undefined);
-                setPhase('explainer');
+                if (skipExplainerRef.current) {
+                  router.back();
+                } else {
+                  setPhase('explainer');
+                }
               }}
             />
           </View>
@@ -385,11 +384,6 @@ export default function NfcNewCardScreen() {
             <AppText variant="body" color={palette.textSecondary} style={styles.centerBody}>
               {errorMessage ?? "Couldn't read this card — try Scan or Enter manually."}
             </AppText>
-            {__DEV__ && debugLine ? (
-              <AppText variant="caption" color={palette.amber} style={styles.debug}>
-                debug: {debugLine}
-              </AppText>
-            ) : null}
             <View style={styles.actions}>
               <PillButton
                 label="Try again"
@@ -500,7 +494,6 @@ const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: spacing.md },
   centerTitle: { textAlign: 'center' },
   centerBody: { textAlign: 'center', marginBottom: spacing.sm },
-  debug: { textAlign: 'center', marginTop: spacing.xs, paddingHorizontal: spacing.md },
   actions: { width: '100%', gap: spacing.sm, marginTop: spacing.md },
   warnIcon: {
     width: 80,

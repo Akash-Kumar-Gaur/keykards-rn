@@ -18,6 +18,7 @@ import { AppText } from '@/components/ui/AppText';
 import { PillButton } from '@/components/ui/PillButton';
 import { Toggle } from '@/components/ui/Toggle';
 import { CardFace } from '@/components/vault/CardFace';
+import { CardMorphTarget } from '@/components/vault/CardMorphTarget';
 import {
   NetworkBadge,
   networkAccessibilityLabel,
@@ -432,17 +433,18 @@ export function CardForm({
       keyboardShouldPersistTaps="handled"
       bottomOffset={24}
     >
-      <CardFace
-        nickname={nickname || 'Card nickname'}
-        bankName={bankName || 'Bank'}
-        network={network}
-        lastFour={previewLastFour}
-        themeId={themeId}
-        expiryMonth={expiryMonth}
-        expiryYear={expiryYear}
-        cardholderName={cardholderName.trim() || null}
-        style={styles.preview}
-      />
+      <CardMorphTarget style={styles.preview} enabled={mode === 'create'}>
+        <CardFace
+          nickname={nickname || 'Card nickname'}
+          bankName={bankName || 'Bank'}
+          network={network}
+          lastFour={previewLastFour}
+          themeId={themeId}
+          expiryMonth={expiryMonth}
+          expiryYear={expiryYear}
+          cardholderName={cardholderName.trim() || null}
+        />
+      </CardMorphTarget>
 
       {captureNotice ? (
         <View
