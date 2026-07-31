@@ -1,0 +1,59 @@
+# Used by EAS Build instead of .gitignore when present.
+# Keep in sync with .gitignore, then add local build artifacts.
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native (generated locally; EAS regenerates)
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+/ios
+/android
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env
+.env*.local
+.env.local
+.env.*.local
+
+# typescript
+*.tsbuildinfo
+
+example
+
+# IDE / local junk
+.idea/
+supabase/.temp/
+
+# Secrets and signing material that must never upload
+credentials.json
+credentials/
+
+# Local Play / bundletool artifacts (were bloating the 404MB archive)
+*.aab
+*.apks
+*.apk
+bundletool.jar
