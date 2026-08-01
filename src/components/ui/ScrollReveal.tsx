@@ -7,7 +7,8 @@
  * never reversing. Falls back to immediate show when used outside a provider.
  */
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useRef } from 'react';
+import { useWindowDimensions } from 'react-native';
 import type { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
 import Animated, {
   runOnJS,
@@ -30,6 +31,12 @@ const Ctx = createContext<ScrollRevealCtx | null>(null);
 const SPRING = { damping: 18, stiffness: 170, mass: 0.9 };
 /** Reveal when the element's top passes this fraction of the viewport height. */
 const TRIGGER = 0.9;
+/**
+ * Content is never allowed to stay invisible because a layout measurement or a
+ * scroll event never reached the UI thread. Past this point the reveal happens
+ * regardless of scroll position.
+ */
+const FAILSAFE_MS = 2500;
 
 export function ScrollRevealProvider({
   scrollY,
@@ -46,26 +53,47 @@ export function useScrollReveal(opts?: {
   const { delay = 0, onShown } = opts ?? {};
   const ctx = useContext(Ctx);
   const reduced = useReducedMotion();
+  const windowH = useWindowDimensions().height;
   const y = useSharedValue(-1);
   const shown = useSharedValue(0);
+  /** One-shot latch: re-running the reaction must not restart the animation. */
+  const armed = useSharedValue(false);
 
   const scrollY = ctx?.scrollY;
   const viewportH = ctx?.viewportH;
 
+  const shownRef = useRef(onShown);
+  shownRef.current = onShown;
+  const reducedRef = useRef(reduced);
+  reducedRef.current = reduced;
+
   useAnimatedReaction(
     () => {
       if (!scrollY || !viewportH) return true; // no provider → reveal now
-      if (viewportH.value <= 0 || y.value < 0) return false;
-      return scrollY.value + viewportH.value * TRIGGER > y.value;
+      if (y.value < 0) return false;
+      // The ScrollView may not have reported its height yet; the window is a
+      // safe upper bound rather than a reason to stay hidden.
+      const height = viewportH.value > 0 ? viewportH.value : windowH;
+      return scrollY.value + height * TRIGGER > y.value;
     },
-    (visible, prev) => {
-      if (visible && shown.value < 1) {
-        shown.value = reduced ? 1 : withDelay(delay, withSpring(1, SPRING));
-        if (onShown) runOnJS(onShown)();
-      }
+    (visible) => {
+      if (!visible || armed.value) return;
+      armed.value = true;
+      shown.value = reduced ? 1 : withDelay(delay, withSpring(1, SPRING));
+      if (onShown) runOnJS(onShown)();
     },
-    [reduced],
+    [reduced, delay, windowH],
   );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (armed.value) return;
+      armed.value = true;
+      shown.value = reducedRef.current ? 1 : withSpring(1, SPRING);
+      shownRef.current?.();
+    }, FAILSAFE_MS);
+    return () => clearTimeout(timer);
+  }, [armed, shown]);
 
   const onLayout = (e: LayoutChangeEvent) => {
     y.value = e.nativeEvent.layout.y;

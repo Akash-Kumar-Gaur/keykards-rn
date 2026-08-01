@@ -11,9 +11,15 @@ export function vaultListMode(args: {
   isError: boolean;
   isSuccess: boolean;
   fetchStatus: 'fetching' | 'paused' | 'idle';
+  /**
+   * False when the query is disabled (signed out). React Query reports a
+   * disabled query as pending/idle forever, which is not a load in progress.
+   */
+  enabled?: boolean;
 }): VaultListMode {
   const hasCachedCards = args.cardCount > 0;
   if (hasCachedCards) return 'list';
+  if (args.enabled === false) return 'empty';
   if (args.isPending && args.fetchStatus === 'fetching') return 'spinner';
   if (args.isError) return 'error';
   if (args.isSuccess) return 'empty';

@@ -58,6 +58,7 @@ export default function VaultScreen() {
     isError,
     isSuccess,
     fetchStatus,
+    enabled: Boolean(userId),
   });
   const showEmpty = listMode === 'empty';
   const showSpinner = listMode === 'spinner';
